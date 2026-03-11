@@ -73,30 +73,32 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOST-01 | TBD | Pending |
-| HOST-02 | TBD | Pending |
-| HOST-03 | TBD | Pending |
-| PLAN-01 | TBD | Pending |
-| PLAN-02 | TBD | Pending |
-| PLAN-03 | TBD | Pending |
-| PLAN-04 | TBD | Pending |
-| BKUP-01 | TBD | Pending |
-| BKUP-02 | TBD | Pending |
-| BKUP-03 | TBD | Pending |
-| UPGD-01 | TBD | Pending |
-| UPGD-02 | TBD | Pending |
-| UPGD-03 | TBD | Pending |
-| UPGD-04 | TBD | Pending |
-| HIST-01 | TBD | Pending |
-| HIST-02 | TBD | Pending |
-| DOCS-01 | TBD | Pending |
-| DOCS-02 | TBD | Pending |
+| HOST-01 | Phase 1 | Planned |
+| HOST-02 | Phase 1 | Planned |
+| HOST-03 | Phase 1 | Planned |
+| PLAN-01 | Phase 2 | Planned |
+| PLAN-02 | Phase 2 | Planned |
+| PLAN-03 | Phase 2 | Planned |
+| PLAN-04 | Phase 2 | Planned |
+| BKUP-01 | Phase 2 | Planned |
+| BKUP-02 | Phase 2 | Planned |
+| BKUP-03 | Phase 2 | Planned |
+| UPGD-01 | Phase 3 | Planned |
+| UPGD-02 | Phase 3 | Planned |
+| UPGD-03 | Phase 3 | Planned |
+| UPGD-04 | Phase 3 | Planned |
+| HIST-01 | Phase 4 | Planned |
+| HIST-02 | Phase 4 | Planned |
+| DOCS-01 | Phase 4 | Planned |
+| DOCS-02 | Phase 4 | Planned |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 ⚠
+- Mapped to phases: 18
+- Unmapped: 0
+- Duplicate mappings: 0
+- Coverage: 100%
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-11 after initial definition*
+*Last updated: 2026-03-11 after roadmap creation*
