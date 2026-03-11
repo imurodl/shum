@@ -1,192 +1,184 @@
 <script setup>
-const principles = [
+const metrics = [
+  { label: 'Operator-focused scope', value: 'Docker Compose upgrades', tone: 'blue' },
+  { label: 'Safety controls', value: 'preflight + policy', tone: 'teal' },
+  { label: 'Recovery path', value: 'artifact + restore', tone: 'blue' },
+  { label: 'Traceability', value: 'run history + events', tone: 'violet' },
+]
+
+const pains = [
+  'Remote upgrades happen in fragile, undocumented sequences',
+  'Backups are ad-hoc, or they are forgotten under pressure',
+  'Teams have no canonical way to review what changed',
+  'Incident retrospectives waste hours reconstructing the last run',
+]
+
+const outcomes = [
+  'Predictable command path: discover, preflight, plan, policy, execute',
+  'Explicit safeguards before mutation: backups and migration warning gates',
+  'Auditable trails for every run and artifact persisted locally',
+  'Single command line surface for ops work and scripts',
+]
+
+const commandFlow = [
   {
-    name: 'Deterministic Safety',
-    body: 'Every mutation starts from preflight checks and an explicit plan. Surprise change is treated as a bug, not a feature.',
+    title: '1) Register and inspect',
+    command: 'shum host register prod\nshum project discover prod',
+    note: 'Trust your host once, then operate against stable aliases.',
   },
   {
-    name: 'Trust-First Operations',
-    body: 'Remote hosts are registered once, verified through SSH identity and capability probing, and then reused across runs.',
+    title: '2) Evaluate and lock intent',
+    command: 'shum project preflight prod web\nshum project plan prod web --json',
+    note: 'No state changes happen before these checks and plan output.',
   },
   {
-    name: 'Policy-Gated Mutations',
-    body: 'Backups, health checks, and migration warnings are policy controls, not tribal knowledge in your head.',
+    title: '3) Enforce policy',
+    command:
+      'shum project policy set prod web --require-backup=true \\\n  --backup-command "docker exec db pg_dumpall -U app > \"$SHUM_BACKUP_ARTIFACT\""\nshum project backup take prod web',
+    note: 'Policy keeps operator intent explicit and replayable.',
   },
   {
-    name: 'Auditability',
-    body: 'Each run stores state transitions, outcomes, and artifacts so incidents can be replayed reliably.',
+    title: '4) Execute with confidence',
+    command: 'shum project upgrade prod web --dry-run --json\nshum project upgrade prod web --json',
+    note: 'Dry-run first, then run with recorded output and run-id.',
+  },
+  {
+    title: '5) Verify and audit',
+    command:
+      'shum project run list --host prod --project web --json\nshum project run show <run-id> --json\nshum project backup list prod web --json',
+    note: 'Review history and failures in one consistent record.',
   },
 ]
 
-const pipeline = [
-  {
-    title: 'Host Onboarding',
-    command: 'shum host register <alias>',
-    detail: 'Trust and fingerprint a production host through SSH, then gather capabilities once.',
-  },
-  {
-    title: 'Project Discovery',
-    command: 'shum project discover <alias>',
-    detail: 'Discover compose projects and normalize metadata, so future steps target canonical project refs.',
-  },
-  {
-    title: 'Readiness + Plan',
-    command: 'shum project preflight <alias> <project-ref>\nshum project plan <alias> <project-ref> --json',
-    detail: 'Run reproducibility checks and inspect exactly what will change before mutating.',
-  },
-  {
-    title: 'Policy + Execute',
-    command: 'shum project policy set <alias> <project-ref> --require-backup=true --health-check "http://127.0.0.1:8080/health"\nshum project upgrade <alias> <project-ref> --dry-run --json',
-    detail: 'Attach backup/restore and post-upgrade verification policy, then dry-run before commit.',
-  },
-  {
-    title: 'Recover + Record',
-    command: 'shum project upgrade <alias> <project-ref>\nshum project run list --host <alias> --project <project-ref>',
-    detail: 'Execute upgrade with rollback-capable artifact tracking and complete history for team review.',
-  },
+const cliSurface = [
+  ['shum host', 'register, list, inspect'],
+  ['shum project discover', 'discover canonical compose projects'],
+  ['shum project inspect', 'inspect metadata, mounts, rendered config'],
+  ['shum project preflight|plan', 'safety gates + explicit upgrade plan'],
+  ['shum project policy', 'set/show project policy controls'],
+  ['shum project backup', 'take, list, restore artifacts'],
+  ['shum project upgrade', 'dry-run then execute with probes'],
+  ['shum project run', 'run history and detailed status'],
 ]
 
-const cliRef = [
-  {
-    command: 'shum host register <alias>',
-    description: 'Capture SSH host identity and environment fingerprints.',
-  },
-  {
-    command: 'shum project inspect <alias> <project-ref> --project-directory ...',
-    description: 'Render risk surfaces from compose files, mounts, and project metadata.',
-  },
-  {
-    command: 'shum project backup take <alias> <project-ref> [--command "..."]',
-    description: 'Create explicit backup artifacts, optionally overriding policy command.',
-  },
-  {
-    command: 'shum project upgrade <alias> <project-ref> --dry-run',
-    description: 'Safe preview mode to review pre-change plan, checks, and constraints.',
-  },
-  {
-    command: 'shum project run show <run-id>',
-    description: 'Inspect run summaries, failure reasons, artifacts, and event history.',
-  },
+const docs = [
+  ['Documentation Site', 'https://imurodl.me/shum/', 'Public landing + architecture + quickstart'],
+  ['Testing Guide', 'https://github.com/imurodl/shum/blob/main/docs/testing.md', 'Verification matrix and CLI checks'],
+  ['GitHub Repo', 'https://github.com/imurodl/shum', 'Source, issues, history'],
 ]
 
-const installCommands = [
-  'git clone https://github.com/imurodl/shum.git',
-  'cd shum',
-  'go test ./...',
-  'go install ./cmd/shum',
-  'shum --help',
-]
-
-const checks = [
-  'No implicit remote mutation without preflight and plan execution',
-  'Backup policy controls are explicit and versioned by project',
-  'Upgrade runs are persisted with failure context and exit summaries',
-  'History can be filtered by host/project for incident archaeology',
-  'Tooling is test-covered and runnable with `go test ./...`',
-]
-
-const architecture = [
-  {
-    name: 'CLI Surface',
-    text: 'A focused Cobra command surface (host, project, run, backup, policy, upgrade) designed for operators.',
-  },
-  {
-    name: 'Ops Service',
-    text: 'Preflight, planning, execution, backup capture, restore, and verification are orchestrated with explicit state transitions.',
-  },
-  {
-    name: 'Repository Layer',
-    text: 'SQLite-backed records for hosts, projects, runs, and artifacts; no hidden state.',
-  },
-  {
-    name: 'Remote Runner',
-    text: 'SSH-based interaction layer with conservative timeouts and structured output parsing.',
-  },
-]
 </script>
 
 <template>
   <div class="page">
     <div class="halo" aria-hidden="true"></div>
-    <main class="stage">
-      <header class="hero">
-        <p class="eyebrow">Self-hosted Operations Infrastructure</p>
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+    <main class="sheet">
+      <header class="hero panel">
+        <p class="eyebrow">Self-Hosted Operations Platform</p>
         <h1>shum</h1>
-        <p class="subtitle">
-          A reliability-first CLI for safer Docker Compose upgrades on remote Linux hosts.
-        </p>
-        <p class="description">
-          It is not an AI wrapper. It is a concrete operations engine with trust-first host management,
-          policy-gated mutation, and auditable upgrade history.
-        </p>
+        <p class="subtitle">Safe, recoverable Docker Compose upgrades for real Linux fleets.</p>
+        <p class="lead">You get deterministic operational safety without giving up control. Register hosts, validate state, execute with policy gates, and keep every run auditable.</p>
         <div class="actions">
-          <a class="btn btn-primary" href="https://github.com/imurodl/shum" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a class="btn btn-ghost" href="#start">Install</a>
-          <a class="btn btn-ghost" href="#commands">Command Reference</a>
-          <a class="btn btn-ghost" href="https://github.com/imurodl/shum/blob/main/docs/testing.md" target="_blank" rel="noopener noreferrer">Testing Guide</a>
+          <a class="btn btn-primary" href="https://github.com/imurodl/shum" target="_blank" rel="noopener noreferrer">Open Source Repo</a>
+          <a class="btn btn-secondary" href="#flow">Open the flow</a>
+          <a class="btn btn-ghost" href="#cli">CLI Surface</a>
+          <a class="btn btn-ghost" href="https://github.com/imurodl/shum/blob/main/docs/testing.md">Testing</a>
         </div>
       </header>
 
-      <section class="panel">
-        <h2>Why this exists</h2>
-        <div class="grid">
-          <article v-for="item in principles" :key="item.name" class="card">
-            <h3>{{ item.name }}</h3>
-            <p>{{ item.body }}</p>
+      <section class="panel metrics">
+        <article v-for="item in metrics" :key="item.label" :class="['metric', `tone-${item.tone}`]">
+          <p class="metric-value">{{ item.value }}</p>
+          <p class="metric-label">{{ item.label }}</p>
+        </article>
+      </section>
+
+      <section class="panel split-2">
+        <article>
+          <h2>Why it exists</h2>
+          <ul class="list">
+            <li v-for="item in pains" :key="item">{{ item }}</li>
+          </ul>
+        </article>
+        <article>
+          <h2>What you get</h2>
+          <ol class="check-list">
+            <li v-for="item in outcomes" :key="item">
+              <span class="dot" aria-hidden="true">✓</span>
+              <span>{{ item }}</span>
+            </li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="panel" id="flow">
+        <h2>Execution flow</h2>
+        <p class="section-copy">Every upgrade follows a strict sequence that favors explicit verification over surprise.</p>
+        <div class="timeline">
+          <article v-for="step in commandFlow" :key="step.title" class="timeline-card">
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.note }}</p>
+            <pre><code>{{ step.command }}</code></pre>
           </article>
         </div>
       </section>
 
-      <section class="panel">
-        <h2>Pipeline</h2>
-        <p class="section-copy">A practical upgrade path you can automate and review.</p>
-        <ol class="steps">
-          <li v-for="(step, index) in pipeline" :key="step.title" class="step">
-            <span class="step-index">0{{ index + 1 }}</span>
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.detail }}</p>
-            <pre><code>{{ step.command }}</code></pre>
-          </li>
-        </ol>
-      </section>
-
-      <section class="panel" id="commands">
-        <h2>Core CLI Surface</h2>
-        <div class="command-list">
-          <div v-for="item in cliRef" :key="item.command" class="command-item">
-            <pre><code>{{ item.command }}</code></pre>
-            <p>{{ item.description }}</p>
-          </div>
+      <section class="panel" id="cli">
+        <h2>CLI surface map</h2>
+        <div class="cli-grid">
+          <article v-for="entry in cliSurface" :key="entry[0]" class="cli-row">
+            <code>{{ entry[0] }}</code>
+            <p>{{ entry[1] }}</p>
+          </article>
         </div>
       </section>
 
-      <section class="split">
-        <article id="start" class="panel">
-          <h2>Install</h2>
-          <p class="section-copy">
-            Build from source and run against a repository clone. This keeps your deployment path explicit.
-          </p>
-          <pre><code>{{ installCommands.join('\n') }}</code></pre>
-          <p class="muted">State lives by default in <code>~/.config/shum</code> and artifacts under <code>~/.cache/shum</code>.</p>
+      <section class="panel split-2">
+        <article>
+          <h2>Install path</h2>
+          <pre><code>git clone https://github.com/imurodl/shum.git
+cd shum
+go install ./cmd/shum
+shum --help</code></pre>
+          <p class="muted">Storage defaults: <code>~/.config/shum</code> and <code>~/.cache/shum</code>.</p>
         </article>
-
-        <article class="panel">
-          <h2>Reliability Guarantees</h2>
-          <ul>
-            <li v-for="item in checks" :key="item">{{ item }}</li>
+        <article>
+          <h2>Quality commitments</h2>
+          <ul class="list">
+            <li>No implicit mutation. Dry-run and checks before run.</li>
+            <li>Policy is the switchboard for backup, restore, and probes.</li>
+            <li>All operations go through test-backed services.</li>
+            <li>Failure context and event history remain queryable and scriptable.</li>
           </ul>
         </article>
       </section>
 
       <section class="panel">
         <h2>Architecture</h2>
-        <div class="grid architecture">
-          <article v-for="item in architecture" :key="item.name" class="card">
-            <h3>{{ item.name }}</h3>
-            <p>{{ item.text }}</p>
-          </article>
+        <p class="section-copy">A minimal stack intentionally avoids magic and keeps state explicit.</p>
+        <div class="arch">
+          <div class="arch-layer">CLI Layer (Cobra commands, JSON + human output)</div>
+          <div class="arch-arrow">↳</div>
+          <div class="arch-layer">Ops Engine (preflight, planning, upgrade, verify)</div>
+          <div class="arch-arrow">↳</div>
+          <div class="arch-layer">Service Layer (hosts, projects, runs, policies)</div>
+          <div class="arch-arrow">↳</div>
+          <div class="arch-layer">Storage (SQLite + local artifacts)</div>
         </div>
       </section>
+
+      <footer class="panel footer">
+        <h2>Resources</h2>
+        <div class="resource-grid">
+          <a v-for="resource in docs" :key="resource[0]" :href="resource[1]" target="_blank" rel="noopener noreferrer" class="resource-card">
+            <p class="resource-title">{{ resource[0] }}</p>
+            <p>{{ resource[2] }}</p>
+          </a>
+        </div>
+        <p class="muted tiny">Built to show operational quality, not abstract AI capability.</p>
+      </footer>
     </main>
   </div>
 </template>
