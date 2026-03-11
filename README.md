@@ -1,98 +1,117 @@
-# shum — Safe, Recoverable Compose Upgrades for Self-Hosted Infra
+# shum
 
-`shum` is a CLI-first operations tool for remote Docker Compose fleets.
+Safe, recoverable Docker Compose upgrades for self-hosted Linux fleets.
 
-It was built to solve a concrete gap: upgrades are usually either unsafe or over-engineered.
-This tool gives you a practical middle path: deterministic planning, policy gates, rollback paths, and auditable history—without wrapping the operations in abstraction layers that hide behavior.
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/imurodl/shum/.github/workflows/deploy-site.yml?label=site)
+![GitHub last commit](https://img.shields.io/github/last-commit/imurodl/shum)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
-## What the tool does
+**Website:** https://imurodl.me/shum/  
+**Repository:** https://github.com/imurodl/shum  
+**License:** Apache-2.0
 
-- Registers and verifies remote hosts through SSH aliases.
-- Discovers and tracks compose projects with canonical naming.
-- Performs preflight checks before any mutation (availability, permissions, policy readiness).
-- Generates explicit upgrade plans before execution.
-- Enforces per-project policy: backups, restore commands, migration warnings, and health probes.
-- Executes upgrades with dry-run mode, then real run mode.
-- Stores run history, artifact checksums, and failure context for post-incident review.
-- Exposes structured output for scripting (`--json`) and human-friendly summary output.
+`shum` is an operations CLI that makes remote Docker Compose upgrades explicit, policy-gated, and recoverable.
 
-## Quickstart
+## What it solves
+
+- Remote upgrades are often risky and inconsistently documented.
+- Teams lack a canonical flow from discovery to rollback.
+- Backup and verification are frequently informal or forgotten.
+- Run history is hard to audit under pressure.
+
+`shum` gives you a single command surface to solve these problems without wrapping your stack in extra abstraction.
+
+## Core guarantees
+
+- **Trust-first host model**: register once, then target stable SSH aliases.
+- **Deterministic upgrade flow**: discover → preflight → plan → policy → execute.
+- **Policy gates**: mandatory backup and migration warning controls.
+- **Recovery**: persisted backup artifacts and restore pathways.
+- **Auditability**: structured run history with status transitions and summaries.
+
+## Architecture
+
+- `host`: register/list/inspect remote hosts and identity metadata.
+- `project discover`: remote compose project discovery.
+- `project inspect`: analyze compose risk surfaces and effective configuration.
+- `project preflight`: verify readiness signals before mutation.
+- `project plan`: compute planned image/config changes before execution.
+- `project policy`: store per-project safety controls.
+- `project backup`: create/list/restore backup artifacts.
+- `project upgrade`: dry-run then execute upgrades with optional probes.
+- `project run`: inspect run history and details.
+
+## Install
 
 ```bash
 git clone https://github.com/imurodl/shum.git
 cd shum
 go install ./cmd/shum
-
-shum host register my-host
-shum project discover my-host
-shum project inspect my-host web --project-directory /srv/web --json
-shum project preflight my-host web
-shum project plan my-host web --json
 ```
 
-## Standard Upgrade Flow
+## Quick start
 
 ```bash
-shum project policy set my-host web \
+shum host register prod
+shum project discover prod
+shum project inspect prod web --project-directory /srv/web --json
+shum project preflight prod web
+shum project plan prod web --json
+```
+
+## Standard flow
+
+```bash
+shum project policy set prod web \
   --require-backup=true \
   --backup-command "docker exec db pg_dumpall -U app > \"$SHUM_BACKUP_ARTIFACT\"" \
   --restore-command "cat \"$SHUM_BACKUP_ARTIFACT\" | docker exec -i db psql -U app" \
   --health-check "http://127.0.0.1:8080/health"
 
-shum project backup take my-host web --json
-shum project upgrade my-host web --dry-run --json
-shum project upgrade my-host web --json
+shum project backup take prod web --json
+shum project upgrade prod web --dry-run --json
+shum project upgrade prod web --json
 
-shum project run list --host my-host --project web --json
+shum project run list --host prod --project web --json
 shum project run show <run-id> --json
-shum project backup list my-host web --json
 ```
-
-## CLI Surfaces
-
-- `shum host register|list|inspect`
-- `shum project discover|inspect|preflight|plan|policy|backup|upgrade|run`
-
-Run `shum --help` after installation for full command docs.
-
-## Guarantees
-
-`shum` aims to make upgrades predictable:
-
-- No command run should change state without an explicit execution step.
-- Plan and preflight data are surfaced before mutation.
-- Upgrade artifacts are persisted for recoverability and audit.
-- Every run has status transitions and summary output.
-- Failures carry context through run history.
-
-## Storage Layout
-
-- Config: `~/.config/shum/`
-- State and artifacts: `~/.cache/shum/`
-  - `state.db`
-  - `artifacts/`
-
-Artifacts are intentionally local to the operator machine by default and can be moved/rotated as part of ops policy.
 
 ## Development
 
 ```bash
 go test ./...
 go build ./cmd/shum
-go test ./test/e2e # optional; requires SHUM_E2E_SSH_ALIAS env
+go test ./test/e2e # optional; requires SHUM_E2E_SSH_ALIAS
 ```
 
-Remote integration tests are opt-in and skip automatically when SSH context is missing.
+Remote integration tests are optional and skip automatically if SSH context is unavailable.
 
-## Documentation
+## Testing
+
+- Local unit and integration coverage in `internal/*` and `test/integration`.
+- Optional remote suite in `test/e2e`.
+- CLI outputs are intentionally explicit for observability in scripts.
+
+## Storage
+
+- Config: `~/.config/shum/`
+- State and artifacts: `~/.cache/shum/`
+  - `state.db`
+  - `artifacts/`
+
+## Docs
 
 - [Testing Guide](./docs/testing.md)
 - [Project Site](https://imurodl.me/shum/)
+- [Contributing Guide](./CONTRIBUTING.md)
+- [Security](./SECURITY.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
 
-## Website
+## Support and roadmap
 
-The project documentation site is a Vue + Vite frontend built with Bun and deployed via GitHub Pages.
+- Open issues in the repository for requests and reproducible bugs.
+- Track upcoming improvements through commits and changelog entries.
 
 ## License
 
-Apache-2.0.
+Apache 2.0; see [`LICENSE`](./LICENSE).

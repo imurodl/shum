@@ -65,6 +65,10 @@ const docs = [
   ['Documentation Site', 'https://imurodl.me/shum/', 'Public landing + architecture + quickstart'],
   ['Testing Guide', 'https://github.com/imurodl/shum/blob/main/docs/testing.md', 'Verification matrix and CLI checks'],
   ['GitHub Repo', 'https://github.com/imurodl/shum', 'Source, issues, history'],
+  ['Contributing', 'https://github.com/imurodl/shum/blob/main/CONTRIBUTING.md', 'How to propose and review changes'],
+  ['Security', 'https://github.com/imurodl/shum/blob/main/SECURITY.md', 'Security model and vulnerability reporting'],
+  ['Code of Conduct', 'https://github.com/imurodl/shum/blob/main/CODE_OF_CONDUCT.md', 'Community and conduct expectations'],
+  ['Changelog', 'https://github.com/imurodl/shum/blob/main/CHANGELOG.md', 'Release notes and project evolution'],
 ]
 
 </script>
