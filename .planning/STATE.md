@@ -1,12 +1,12 @@
 # Planning State: Self-Host Upgrade Manager
 
 **Updated:** 2026-03-11
-**Roadmap status:** Created
+**Roadmap status:** Completed
 **Mode:** yolo
 **Granularity:** coarse
 **Current milestone:** v1
-**Current phase:** Phase 1 - Remote Host Registration and Canonical Compose Discovery
-**Next action:** Create the detailed plan for Phase 1
+**Current phase:** Phase 4 - Run Audit Trail and Public Operator Docs
+**Next action:** Monitor for follow-up issues from operators and begin v2 planning
 
 ## Coverage
 
@@ -20,10 +20,10 @@
 
 | Phase | Status | Requirement Count | Goal |
 |-------|--------|-------------------|------|
-| Phase 1 | Next | 3 | Establish trusted SSH host registration and canonical Compose discovery |
-| Phase 2 | Queued | 7 | Build deterministic planning, safety gates, and recoverability prerequisites |
-| Phase 3 | Queued | 4 | Deliver health-gated upgrade execution with rollback control |
-| Phase 4 | Queued | 4 | Ship operator-facing history and public docs for adoption |
+| Phase 1 | Done | 3 | Establish trusted SSH host registration and canonical Compose discovery |
+| Phase 2 | Done | 7 | Build deterministic planning, safety gates, and recoverability prerequisites |
+| Phase 3 | Done | 4 | Deliver health-gated upgrade execution with rollback control |
+| Phase 4 | Done | 4 | Ship operator-facing history and public docs for adoption |
 
 ## Notes
 

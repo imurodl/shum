@@ -1,0 +1,8 @@
+artifacts/
+state.db
+*.db
+*.sqlite
+test/data
+dist/
+.cache/
+shum

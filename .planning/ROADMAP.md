@@ -16,6 +16,8 @@
 
 **Requirements mapped here:** `HOST-01`, `HOST-02`, `HOST-03`
 
+Status: implementation complete.
+
 **Success criteria:**
 - User registers a Linux host over SSH and later connections fail loudly on host key mismatch.
 - User discovers Docker Compose projects and services on a registered host without manually reconstructing project metadata.
@@ -26,6 +28,8 @@
 **Why this phase exists:** The tool only becomes trustworthy when it can explain the exact change, prove prerequisites, and require recoverability before any mutation happens.
 
 **Requirements mapped here:** `PLAN-01`, `PLAN-02`, `PLAN-03`, `PLAN-04`, `BKUP-01`, `BKUP-02`, `BKUP-03`
+
+Status: implementation complete.
 
 **Success criteria:**
 - User runs a preflight check and sees pass/fail results for Docker or Compose availability, permissions, disk headroom, and external dependency readiness.
@@ -40,6 +44,8 @@
 
 **Requirements mapped here:** `UPGD-01`, `UPGD-02`, `UPGD-03`, `UPGD-04`
 
+Status: implementation complete.
+
 **Success criteria:**
 - User executes an upgrade for a selected Docker Compose project on a target host from an approved plan.
 - Tool declares success only after Compose health plus configured HTTP, TCP, or command probes pass within the expected stabilization window.
@@ -51,6 +57,8 @@
 **Why this phase exists:** Operators need a durable audit trail and clear public documentation before the tool is credible as a real OSS product.
 
 **Requirements mapped here:** `HIST-01`, `HIST-02`, `DOCS-01`, `DOCS-02`
+
+Status: implementation complete.
 
 **Success criteria:**
 - User lists past upgrade runs with timestamps, actions, outcomes, and artifact references.
@@ -67,7 +75,7 @@
 | Phase 3 | 4 | `UPGD-01`, `UPGD-02`, `UPGD-03`, `UPGD-04` |
 | Phase 4 | 4 | `HIST-01`, `HIST-02`, `DOCS-01`, `DOCS-02` |
 
-**Validation result:**
+**Validation result (current):**
 - Total v1 requirements: 18
 - Mapped to exactly one phase: 18
 - Unmapped requirements: 0
