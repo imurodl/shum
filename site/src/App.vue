@@ -61,6 +61,14 @@ const evidenceCards = [
   },
 ]
 
+const dossierSummary = [
+  ['run_id', 'run_01JQ4KQ9DZH8'],
+  ['status', 'completed'],
+  ['changed_services', '3'],
+  ['backup_artifact', 'backup-2026-03-11T14:08:22Z.tar'],
+  ['health_check', 'passed'],
+]
+
 const compareSides = {
   before: [
     'Manual shell history as the only release documentation',
@@ -233,22 +241,43 @@ const resources = [
       </section>
 
       <section class="evidence panel">
-        <div class="evidence-copy">
+        <div class="section-header section-header-wide">
           <p class="section-tag">What gets captured</p>
-          <h2>SHUM behaves like a release dossier, not just another CLI.</h2>
+          <h2>SHUM leaves behind a release dossier, not a vague memory.</h2>
           <p class="evidence-lead">
             The point is not only to run the upgrade. The point is to leave behind enough structured evidence
             that the next engineer can understand, verify, and if needed reverse it.
           </p>
         </div>
 
-        <div class="evidence-grid">
-          <article v-for="item in evidenceCards" :key="item.tag" class="evidence-card">
-            <p class="evidence-tag">{{ item.tag }}</p>
-            <h3>{{ item.title }}</h3>
-            <p class="evidence-copy-text">{{ item.copy }}</p>
-            <pre><code>{{ item.sample }}</code></pre>
+        <div class="evidence-layout">
+          <article class="dossier-card">
+            <p class="dossier-kicker">run summary / prod-web / completed</p>
+            <h3>Evidence is part of the product surface.</h3>
+            <p class="dossier-copy">
+              A successful upgrade should leave more than a changed deployment. It should leave enough verified
+              state to explain what happened, prove what was checked, and shorten the next incident review.
+            </p>
+
+            <div class="dossier-grid">
+              <div v-for="item in dossierSummary" :key="item[0]" class="dossier-row">
+                <span>{{ item[0] }}</span>
+                <strong>{{ item[1] }}</strong>
+              </div>
+            </div>
+
+            <pre><code>shum project run show run_01JQ4KQ9DZH8 --json
+shum project backup list prod web --json</code></pre>
           </article>
+
+          <div class="evidence-grid">
+            <article v-for="item in evidenceCards" :key="item.tag" class="evidence-card">
+              <p class="evidence-tag">{{ item.tag }}</p>
+              <h3>{{ item.title }}</h3>
+              <p class="evidence-copy-text">{{ item.copy }}</p>
+              <pre><code>{{ item.sample }}</code></pre>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -258,9 +287,16 @@ const resources = [
           <h2>Five deliberate stages before and after rollout.</h2>
         </div>
 
-        <div class="workflow-grid">
-          <article v-for="step in flow" :key="step.label" class="step-card">
-            <p class="step-label">{{ step.label }}</p>
+        <div class="workflow-track">
+          <article
+            v-for="(step, index) in flow"
+            :key="step.label"
+            :class="['step-card', index % 2 === 0 ? 'step-card-left' : 'step-card-right']"
+          >
+            <div class="step-topline">
+              <p class="step-label">{{ step.label }}</p>
+              <span class="step-number">{{ String(index + 1).padStart(2, '0') }}</span>
+            </div>
             <h3>{{ step.title }}</h3>
             <p class="step-copy">{{ step.copy }}</p>
             <pre><code>{{ step.command }}</code></pre>
@@ -335,6 +371,19 @@ const resources = [
             <strong>Storage</strong>
             <span>SQLite state plus artifact directories for recovery workflows.</span>
           </article>
+        </div>
+      </section>
+
+      <section class="closing panel">
+        <p class="section-tag">Final note</p>
+        <h2>Release night should feel disciplined before it feels fast.</h2>
+        <p class="closing-copy">
+          SHUM is an open-source operations tool for teams that want self-hosted upgrades to be explicit,
+          recoverable, and reviewable without inventing a platform around them.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/imurodl/shum" target="_blank" rel="noopener noreferrer">Explore repository</a>
+          <a class="button button-secondary" href="#atlas">Inspect CLI surface</a>
         </div>
       </section>
 

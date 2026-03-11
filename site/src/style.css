@@ -374,7 +374,6 @@ pre code {
 
 .evidence {
   display: grid;
-  grid-template-columns: 0.82fr 1.18fr;
   gap: 1rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 249, 239, 0.92));
@@ -406,9 +405,78 @@ pre code {
   max-width: 48ch;
 }
 
+.evidence-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.dossier-card {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(23, 20, 16, 0.16);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(17, 15, 12, 0.98), rgba(27, 22, 16, 0.96));
+  color: #f6ead2;
+  box-shadow: 0 22px 46px rgba(23, 20, 16, 0.14);
+}
+
+.dossier-kicker {
+  margin: 0;
+  color: rgba(243, 230, 203, 0.72);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+}
+
+.dossier-card h3 {
+  margin: 0;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.dossier-copy {
+  margin: 0;
+  max-width: 52ch;
+  color: rgba(243, 230, 203, 0.82);
+  line-height: 1.8;
+  font-size: 0.82rem;
+}
+
+.dossier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.dossier-row {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.72rem 0.78rem;
+  border: 1px solid rgba(243, 230, 203, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dossier-row span {
+  color: rgba(243, 230, 203, 0.64);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.dossier-row strong {
+  font-size: 0.8rem;
+}
+
 .evidence-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.8rem;
   align-items: start;
 }
@@ -420,10 +488,6 @@ pre code {
   border: 1px solid var(--line);
   border-radius: 22px;
   background: rgba(255, 251, 244, 0.86);
-}
-
-.evidence-card:nth-child(2) {
-  transform: translateY(1.2rem);
 }
 
 .evidence-tag {
@@ -479,27 +543,63 @@ pre code {
   margin-bottom: 1rem;
 }
 
-.workflow-grid {
+.section-header-wide {
+  max-width: 68rem;
+}
+
+.workflow-track {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.85rem;
+  gap: 1rem;
+  position: relative;
+}
+
+.workflow-track::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(rgba(23, 20, 16, 0), rgba(23, 20, 16, 0.18), rgba(23, 20, 16, 0));
+  transform: translateX(-50%);
 }
 
 .step-card {
   display: grid;
   align-content: start;
-  gap: 0.5rem;
-  min-height: 100%;
-  grid-column: span 2;
+  gap: 0.65rem;
+  width: min(680px, calc(50% - 1.5rem));
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 22px;
   background: rgba(255, 251, 244, 0.8);
+  position: relative;
 }
 
-.step-card:nth-child(4),
-.step-card:nth-child(5) {
-  grid-column: span 3;
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 1.2rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+.step-card-left {
+  justify-self: start;
+}
+
+.step-card-left::before {
+  right: -1.85rem;
+}
+
+.step-card-right {
+  justify-self: end;
+}
+
+.step-card-right::before {
+  left: -1.85rem;
 }
 
 .step-card h3 {
@@ -507,6 +607,20 @@ pre code {
   font-family: 'Fraunces', Georgia, serif;
   font-size: 1.55rem;
   line-height: 1.05;
+}
+
+.step-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.step-number {
+  color: rgba(23, 20, 16, 0.26);
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.6rem;
+  line-height: 1;
 }
 
 .step-copy {
@@ -551,6 +665,48 @@ pre code {
   color: var(--muted);
   line-height: 1.85;
   font-size: 0.84rem;
+}
+
+.closing {
+  display: grid;
+  gap: 0.7rem;
+  align-items: start;
+  padding: 1.35rem 1.2rem;
+  background:
+    linear-gradient(140deg, rgba(16, 15, 12, 0.98), rgba(32, 27, 20, 0.94));
+  color: #f6ead2;
+}
+
+.closing h2 {
+  margin: 0;
+  max-width: 14ch;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+}
+
+.closing .section-tag {
+  color: rgba(243, 230, 203, 0.72);
+}
+
+.closing-copy {
+  margin: 0;
+  max-width: 68ch;
+  color: rgba(243, 230, 203, 0.84);
+  line-height: 1.8;
+  font-size: 0.85rem;
+}
+
+.closing .button-primary {
+  background: #f6ead2;
+  color: #171410;
+}
+
+.closing .button-secondary {
+  border-color: rgba(243, 230, 203, 0.36);
+  color: #f6ead2;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .atlas {
@@ -660,18 +816,8 @@ pre code {
 }
 
 @media (max-width: 1120px) {
-  .workflow-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .resource-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .step-card,
-  .step-card:nth-child(4),
-  .step-card:nth-child(5) {
-    grid-column: span 1;
   }
 }
 
@@ -679,6 +825,7 @@ pre code {
   .hero,
   .manifesto,
   .evidence,
+  .evidence-layout,
   .atlas,
   .architecture-rail,
   .contrast-grid {
@@ -686,6 +833,7 @@ pre code {
   }
 
   .signal-grid,
+  .dossier-grid,
   .evidence-grid {
     grid-template-columns: 1fr;
   }
@@ -694,13 +842,21 @@ pre code {
     transform: none;
   }
 
-  .evidence-card:nth-child(2) {
-    transform: none;
-  }
-
   .hero-word {
     right: -0.8rem;
     top: 9rem;
+  }
+
+  .workflow-track::before,
+  .step-card::before {
+    display: none;
+  }
+
+  .step-card,
+  .step-card-left,
+  .step-card-right {
+    width: 100%;
+    justify-self: stretch;
   }
 }
 
@@ -716,7 +872,6 @@ pre code {
     width: min(100%, calc(100% - 0.9rem));
   }
 
-  .workflow-grid,
   .resource-grid {
     grid-template-columns: 1fr;
   }
