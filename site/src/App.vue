@@ -29,6 +29,53 @@ const ledger = [
   ['audit', 'run record stored with artifacts'],
 ]
 
+const protocolStrip = [
+  'discover',
+  'preflight',
+  'plan',
+  'backup',
+  'dry-run',
+  'upgrade',
+  'audit',
+  'restore-ready',
+]
+
+const evidenceCards = [
+  {
+    tag: 'policy',
+    title: 'Safety rules become executable',
+    copy: 'Probe checks, backup commands, and migration warnings are loaded as project policy before rollout.',
+    sample: '--require-backup=true\n--health-check http://127.0.0.1:8080/health',
+  },
+  {
+    tag: 'artifacts',
+    title: 'Recovery is part of the same toolchain',
+    copy: 'Backups are captured into artifacts with restore paths that exist before the critical moment.',
+    sample: '~/.cache/shum/artifacts/\nbackup-2026-03-11T14:08:22Z.tar',
+  },
+  {
+    tag: 'run log',
+    title: 'Every rollout leaves a readable trail',
+    copy: 'Execution history is preserved as run records with summaries and status transitions for review.',
+    sample: 'run_01JQ4K...\nstatus: completed\nchanged_services: 3',
+  },
+]
+
+const compareSides = {
+  before: [
+    'Manual shell history as the only release documentation',
+    'Rollback path guessed during the outage',
+    'Inconsistent host targeting and environment assumptions',
+    'No durable record of what changed and why',
+  ],
+  after: [
+    'A defined release protocol from discovery to audit',
+    'Backups and restore commands prepared before execution',
+    'Host-aware operations bound to trusted SSH aliases',
+    'Structured run history ready for review and incident analysis',
+  ],
+}
+
 const flow = [
   {
     label: '01 / map',
@@ -158,6 +205,13 @@ const resources = [
         </aside>
       </section>
 
+      <section class="protocol-band" aria-label="Protocol strip">
+        <div class="protocol-track">
+          <span v-for="item in protocolStrip" :key="`a-${item}`">{{ item }}</span>
+          <span v-for="item in protocolStrip" :key="`b-${item}`">{{ item }}</span>
+        </div>
+      </section>
+
       <section class="manifesto panel">
         <div class="manifesto-copy">
           <p class="section-tag">Operational premise</p>
@@ -178,6 +232,26 @@ const resources = [
         </div>
       </section>
 
+      <section class="evidence panel">
+        <div class="evidence-copy">
+          <p class="section-tag">What gets captured</p>
+          <h2>SHUM behaves like a release dossier, not just another CLI.</h2>
+          <p class="evidence-lead">
+            The point is not only to run the upgrade. The point is to leave behind enough structured evidence
+            that the next engineer can understand, verify, and if needed reverse it.
+          </p>
+        </div>
+
+        <div class="evidence-grid">
+          <article v-for="item in evidenceCards" :key="item.tag" class="evidence-card">
+            <p class="evidence-tag">{{ item.tag }}</p>
+            <h3>{{ item.title }}</h3>
+            <p class="evidence-copy-text">{{ item.copy }}</p>
+            <pre><code>{{ item.sample }}</code></pre>
+          </article>
+        </div>
+      </section>
+
       <section class="workflow panel" id="flow">
         <div class="section-header">
           <p class="section-tag">Upgrade flow</p>
@@ -190,6 +264,29 @@ const resources = [
             <h3>{{ step.title }}</h3>
             <p class="step-copy">{{ step.copy }}</p>
             <pre><code>{{ step.command }}</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="contrast panel">
+        <div class="section-header">
+          <p class="section-tag">Operational difference</p>
+          <h2>From improvised release night to repeatable upgrade protocol.</h2>
+        </div>
+
+        <div class="contrast-grid">
+          <article class="contrast-card contrast-before">
+            <p class="contrast-label">Without SHUM</p>
+            <ul class="contrast-list">
+              <li v-for="item in compareSides.before" :key="item">{{ item }}</li>
+            </ul>
+          </article>
+
+          <article class="contrast-card contrast-after">
+            <p class="contrast-label">With SHUM</p>
+            <ul class="contrast-list">
+              <li v-for="item in compareSides.after" :key="item">{{ item }}</li>
+            </ul>
           </article>
         </div>
       </section>

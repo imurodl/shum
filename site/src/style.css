@@ -293,6 +293,41 @@ body {
   padding-top: 0.95rem;
 }
 
+.protocol-band {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(23, 20, 16, 0.12);
+  border-bottom: 1px solid rgba(23, 20, 16, 0.12);
+  padding: 0.75rem 0;
+}
+
+.protocol-track {
+  display: flex;
+  gap: 0.9rem;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.protocol-track span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(23, 20, 16, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 251, 244, 0.64);
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.protocol-track span::after {
+  content: '+';
+  color: var(--accent);
+}
+
 .protocol-list {
   margin: 0.7rem 0 0;
   padding-left: 1.3rem;
@@ -337,9 +372,18 @@ pre code {
   align-items: start;
 }
 
+.evidence {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 249, 239, 0.92));
+}
+
 .manifesto-copy h2,
 .section-header h2,
-.atlas-copy h2 {
+.atlas-copy h2,
+.evidence-copy h2 {
   font-size: clamp(2rem, 5.4vw, 4rem);
 }
 
@@ -352,6 +396,56 @@ pre code {
 
 .ledger-card {
   padding: 0.2rem 0;
+}
+
+.evidence-lead {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 0.84rem;
+  max-width: 48ch;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.evidence-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 251, 244, 0.86);
+}
+
+.evidence-card:nth-child(2) {
+  transform: translateY(1.2rem);
+}
+
+.evidence-tag {
+  margin: 0;
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+}
+
+.evidence-card h3 {
+  margin: 0;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.45rem;
+  line-height: 1.06;
+}
+
+.evidence-copy-text {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 0.8rem;
 }
 
 .ledger-rows {
@@ -387,7 +481,7 @@ pre code {
 
 .workflow-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
@@ -396,10 +490,16 @@ pre code {
   align-content: start;
   gap: 0.5rem;
   min-height: 100%;
+  grid-column: span 2;
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 22px;
   background: rgba(255, 251, 244, 0.8);
+}
+
+.step-card:nth-child(4),
+.step-card:nth-child(5) {
+  grid-column: span 3;
 }
 
 .step-card h3 {
@@ -413,6 +513,44 @@ pre code {
   margin: 0;
   font-size: 0.82rem;
   line-height: 1.75;
+}
+
+.contrast-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.contrast-card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 251, 244, 0.74);
+}
+
+.contrast-before {
+  background: rgba(255, 247, 240, 0.76);
+}
+
+.contrast-after {
+  background: rgba(239, 255, 249, 0.8);
+  border-color: rgba(10, 143, 116, 0.22);
+}
+
+.contrast-label {
+  margin: 0 0 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.74rem;
+}
+
+.contrast-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--muted);
+  line-height: 1.85;
+  font-size: 0.84rem;
 }
 
 .atlas {
@@ -512,6 +650,15 @@ pre code {
   font-weight: 700;
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (max-width: 1120px) {
   .workflow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -520,21 +667,34 @@ pre code {
   .resource-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .step-card,
+  .step-card:nth-child(4),
+  .step-card:nth-child(5) {
+    grid-column: span 1;
+  }
 }
 
 @media (max-width: 900px) {
   .hero,
   .manifesto,
+  .evidence,
   .atlas,
-  .architecture-rail {
+  .architecture-rail,
+  .contrast-grid {
     grid-template-columns: 1fr;
   }
 
-  .signal-grid {
+  .signal-grid,
+  .evidence-grid {
     grid-template-columns: 1fr;
   }
 
   .runbook-card {
+    transform: none;
+  }
+
+  .evidence-card:nth-child(2) {
     transform: none;
   }
 
