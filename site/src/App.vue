@@ -86,7 +86,7 @@ const resources = [
       <header class="panel hero">
         <p class="eyebrow">open-source + production operations</p>
         <h1>SHUM</h1>
-        <p class="subtitle">Safe, Host-Aware Upgrade Manager for self-hosted Linux fleets.</p>
+        <p class="subtitle">Safe, Host-Aware Upgrade Management for self-hosted Linux fleets.</p>
         <p class="lead">Safe, recoverable Docker Compose upgrades with trust-first SSH state and auditable operations.</p>
         <div class="actions">
           <a class="btn btn-primary" href="https://github.com/imurodl/shum" target="_blank" rel="noopener noreferrer">View Source</a>
