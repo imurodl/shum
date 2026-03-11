@@ -6,3 +6,5 @@ test/data
 dist/
 .cache/
 shum
+site/node_modules/
+site/dist/

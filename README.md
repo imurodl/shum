@@ -79,3 +79,16 @@ State and artifacts are stored under:
 - `UPGD-01..04`: upgrade execution + verification + rollback
 - `HIST-01..02`: run and backup history
 - `DOCS-01..02`: public landing documentation and command examples
+
+## Public Docs Site
+
+The docs site is built with Vue + Vite and Bun, and deployed to GitHub Pages.
+
+```bash
+cd site
+bun install
+bun run dev     # local dev server
+bun run build   # generates site/dist
+```
+
+Production publish is automated by GitHub Actions: `.github/workflows/deploy-site.yml`.

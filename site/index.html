@@ -3,66 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>shum | Trust-First Docker Compose Operations</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>shum — trust-first compose upgrades</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f2b52'/%3E%3Cpath d='M18 20h10v24H18zm9 0h10v24H27zm9 0h10v24H36z' fill='%23c0efff'/%3E%3C/svg%3E" />
 </head>
 <body>
-  <div class="grain"></div>
-  <header class="hero">
-    <p class="eyebrow">Self-hosted upgrades, made predictable</p>
-    <h1>shum</h1>
-    <p class="subtitle">A trust-first CLI for safer Docker Compose upgrades on Linux hosts.</p>
-    <div class="actions">
-      <a class="btn btn-primary" href="https://github.com/your-org/shum">Get the code</a>
-      <a class="btn btn-secondary" href="#quickstart">Run quickstart</a>
-    </div>
-  </header>
-
-  <main class="content">
-    <section class="section">
-      <h2>What shum protects</h2>
-      <p>
-        Self-hosted environments break in production windows. shum starts from explicit trust and explicit state:
-      </p>
-      <ul class="pill-list">
-        <li>SSH aliases with known-host verification</li>
-        <li>Runtime-first project discovery</li>
-        <li>Canonical context checks before changing state</li>
-        <li>Stored inspect artifacts for evidence and rollback planning</li>
-        <li>Deterministic upgrade plans with preflight gating</li>
-        <li>Backup and restore hooks + rollback workflow</li>
-      </ul>
-    </section>
-
-    <section class="section" id="quickstart">
-      <h2>Quickstart</h2>
-      <p>Register a host, discover projects, inspect, then run safely:</p>
-      <pre><code>shum host register prod
-shum project discover prod
-shum project inspect prod web --project-directory /srv/web --json
-shum project preflight prod web
-shum project plan prod web --json</code></pre>
-      <p>Inspect history for a specific target:</p>
-      <pre><code>shum project run list --host prod --project web --json</code></pre>
-      <p>Set policy, back up, and upgrade:</p>
-      <pre><code>shum project policy set prod web \
-  --require-backup=true \
-  --backup-command "docker exec web pg_dumpall -U app > \"$SHUM_BACKUP_ARTIFACT\"" \
-  --restore-command "docker exec -i web psql -U app < \"$SHUM_BACKUP_ARTIFACT\""
-shum project upgrade prod web --dry-run
-shum project run list --limit 10 --json
-shum project run show run-1700000000000000000 --json</code></pre>
-    </section>
-
-    <section class="section">
-      <h2>Roadmap focus</h2>
-      <ul>
-        <li>Phase 1 done: connectivity, discovery, and canonical inspect scaffolding</li>
-        <li>Phase 2 done: preflight, plan generation, and policy projection</li>
-        <li>Phase 3 done: backups, verification, and rollback recovery</li>
-        <li>Phase 4 done: history/audit view and public docs</li>
-      </ul>
-    </section>
-  </main>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
