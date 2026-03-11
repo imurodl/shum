@@ -1,345 +1,359 @@
 <script setup>
-const capabilityPills = [
-  'Trusted SSH host aliases',
-  'Docker Compose project discovery',
-  'Dry-run before mutation',
-  'Backup and restore workflows',
-  'Run history and artifacts',
+const navLinks = [
+  { label: 'Why', href: '#why' },
+  { label: 'Flow', href: '#flow' },
+  { label: 'Proof', href: '#proof' },
+  { label: 'Start', href: '#start' },
 ]
 
-const summaryCards = [
+const tickerItems = [
+  'trusted SSH aliases',
+  'compose-aware inspection',
+  'dry-run before mutation',
+  'backup policy gates',
+  'artifact and run history',
+]
+
+const failureModes = [
   {
-    title: 'SSH trust',
-    copy: 'Register a host once, then target it through a stable alias.',
+    index: 'A1',
+    title: 'Deployment knowledge drifts between operators.',
+    copy: 'The real plan often lives in shell history, notes, and one engineer’s memory.',
   },
   {
-    title: 'Compose-aware',
-    copy: 'Discover projects, inspect config, and plan image changes.',
+    index: 'A2',
+    title: 'Rollback preparation starts after the damage.',
+    copy: 'Backups and restore commands stay optional until the rollout is already unstable.',
   },
   {
-    title: 'Recovery-ready',
-    copy: 'Backup and restore commands are part of project policy.',
+    index: 'A3',
+    title: 'Preflight checks are uneven and fragile.',
+    copy: 'Image deltas, health checks, and warnings get validated differently every time.',
   },
   {
-    title: 'Auditable',
-    copy: 'Every upgrade produces readable status and run records.',
+    index: 'A4',
+    title: 'After the run, evidence is incomplete.',
+    copy: 'Teams struggle to reconstruct what changed, what was protected, and what actually passed.',
   },
 ]
 
-const operatorRisks = [
-  'Release steps drift between engineers and hosts.',
-  'Rollback planning starts after the deployment has already gone wrong.',
-  'Compose upgrades are often executed with weak preflight validation.',
-  'Incident review slows down because the run is only partly documented.',
-]
-
-const ledger = [
-  ['host', 'trusted SSH alias loaded'],
-  ['project', 'compose stack discovered'],
-  ['policy', 'backup and health rules active'],
-  ['plan', 'target image delta computed'],
-  ['run', 'artifact and status history persisted'],
-]
-
-const flow = [
+const flowSteps = [
   {
-    stage: '01',
-    title: 'Register trust',
-    copy: 'Create a durable host entry from a known SSH alias.',
+    step: '01',
+    title: 'Register the host you already trust',
+    copy: 'Start from a known SSH alias and keep that identity stable during live work.',
     command: 'shum host register prod\nshum project discover prod',
   },
   {
-    stage: '02',
-    title: 'Inspect stack',
-    copy: 'Read project state and run preflight checks before touching the host.',
-    command: 'shum project inspect prod web --project-directory /srv/web --json\nshum project preflight prod web --json',
-  },
-  {
-    stage: '03',
-    title: 'Load policy',
-    copy: 'Require backups, probe checks, and explicit migration warnings.',
+    step: '02',
+    title: 'Inspect and preflight the Compose project',
+    copy: 'Read effective project state and validate readiness before a real change.',
     command:
-      'shum project policy set prod web --require-backup=true \\\n  --backup-command "docker exec db pg_dumpall -U app > \"$SHUM_BACKUP_ARTIFACT\""',
+      'shum project inspect prod web --project-directory /srv/web --json\nshum project preflight prod web --json',
   },
   {
-    stage: '04',
-    title: 'Preview change',
-    copy: 'Generate a plan and run a dry-run before the real upgrade.',
+    step: '03',
+    title: 'Attach policy to the project itself',
+    copy: 'Store backup requirements and health probes with the project instead of operator memory.',
+    command:
+      'shum project policy set prod web --require-backup=true \\\n  --backup-command "docker exec db pg_dumpall -U app > \\"$SHUM_BACKUP_ARTIFACT\\"" \\\n  --health-check "http://127.0.0.1:8080/health"',
+  },
+  {
+    step: '04',
+    title: 'Plan and dry-run before mutation',
+    copy: 'Compute the intended change and make preview output part of the normal path.',
     command: 'shum project plan prod web --json\nshum project upgrade prod web --dry-run --json',
   },
   {
-    stage: '05',
-    title: 'Execute and review',
-    copy: 'Upgrade deliberately, then inspect run history and artifacts.',
+    step: '05',
+    title: 'Execute and inspect the resulting run',
+    copy: 'The same CLI that performs the rollout also preserves summaries and artifacts afterward.',
     command: 'shum project upgrade prod web --json\nshum project run list --host prod --project web --json',
   },
 ]
 
-const featureCards = [
+const proofCards = [
   {
-    label: 'policy',
-    title: 'Project rules are executable',
-    copy: 'Backup requirements, restore commands, probes, and warnings are stored with the project rather than improvised during the rollout.',
-    sample: '--require-backup=true\n--health-check http://127.0.0.1:8080/health',
+    label: 'Preview',
+    title: 'You do not learn the blast radius at execution time.',
+    copy: 'Inspection, planning, and dry-runs make the path readable before the host changes.',
   },
   {
-    label: 'artifacts',
-    title: 'Recovery paths stay close to execution',
-    copy: 'Artifacts and restore actions are captured by the same CLI that performs the upgrade.',
-    sample: '~/.cache/shum/artifacts/\nbackup-2026-03-11T14:08:22Z.tar',
+    label: 'Policy',
+    title: 'Safety controls stop being optional.',
+    copy: 'Backup requirements and health checks become project rules instead of team habits.',
   },
   {
-    label: 'history',
-    title: 'Runs are readable after the fact',
-    copy: 'Run summaries and status changes remain available for review, debugging, and post-incident cleanup.',
-    sample: 'status: completed\nchanged_services: 3\nhealth_check: passed',
+    label: 'Recovery',
+    title: 'Artifacts stay close to the upgrade workflow.',
+    copy: 'Recovery paths stay near the run instead of being reconstructed after something breaks.',
+  },
+  {
+    label: 'Audit',
+    title: 'A rollout leaves evidence behind.',
+    copy: 'Operators can inspect status, changed services, and health outcomes after the run.',
   },
 ]
 
-const commandAtlas = [
-  ['shum host register', 'Create a trusted host entry from an SSH alias'],
-  ['shum project discover', 'Scan the remote host for Compose projects'],
-  ['shum project inspect', 'Inspect mounts, labels, images, and project metadata'],
-  ['shum project preflight', 'Validate the environment before mutation'],
-  ['shum project plan', 'Compute image and manifest changes'],
-  ['shum project policy', 'Persist backup, restore, and probe rules'],
-  ['shum project backup', 'Take, list, and restore artifacts'],
-  ['shum project upgrade', 'Dry-run first, then execute the rollout'],
-  ['shum project run', 'Read status, run summaries, and history'],
-]
-
-const architecture = [
-  ['CLI', 'Human-readable and JSON outputs for operators and scripts'],
-  ['Ops engine', 'Preflight, planning, upgrade execution, and verification'],
-  ['Domain state', 'Hosts, projects, policies, runs, and artifact metadata'],
-  ['Storage', 'SQLite plus filesystem artifacts for recovery workflows'],
-]
-
-const resources = [
-  ['GitHub', 'https://github.com/imurodl/shum', 'Source, issues, releases'],
-  ['Testing Guide', 'https://github.com/imurodl/shum/blob/main/docs/testing.md', 'Verification matrix and remote checks'],
-  ['Contributing', 'https://github.com/imurodl/shum/blob/main/CONTRIBUTING.md', 'Contribution standards'],
-  ['Security', 'https://github.com/imurodl/shum/blob/main/SECURITY.md', 'Security disclosure policy'],
-  ['Changelog', 'https://github.com/imurodl/shum/blob/main/CHANGELOG.md', 'Project evolution'],
-]
-
-const bootstrap = `git clone https://github.com/imurodl/shum.git
-cd shum
-go install ./cmd/shum
-shum --help`
-
-const previewBlock = `shum project policy set prod web --require-backup=true
-shum project backup take prod web --json
-shum project upgrade prod web --dry-run --json
-shum project run list --host prod --project web --json`
-
-const artifactBlock = `shum project run show run_01JQ4KQ9DZH8 --json
+const evidencePanels = [
+  {
+    label: 'Field test',
+    title: 'Fast path to evaluation',
+    copy: 'Judge SHUM by running the workflow against a real host and seeing whether the path gets clearer.',
+    code: `shum host register prod
+shum project discover prod
+shum project inspect prod web --project-directory /srv/web --json
+shum project preflight prod web --json
+shum project upgrade prod web --dry-run --json`,
+  },
+  {
+    label: 'Run evidence',
+    title: 'Post-run facts',
+    copy: 'Review the actual result instead of hunting through old terminal buffers.',
+    code: `shum project run show run_01JQ4KQ9DZH8 --json
 {
   "status": "completed",
   "changed_services": 3,
   "artifact_count": 1,
   "health_check": "passed"
-}`
+}`,
+  },
+]
+
+const resourceCards = [
+  {
+    title: 'Quick start',
+    href: 'https://github.com/imurodl/shum#quick-start',
+    copy: 'Install SHUM and walk through the standard operator flow.',
+  },
+  {
+    title: 'Repository',
+    href: 'https://github.com/imurodl/shum',
+    copy: 'Source, issues, releases, and implementation detail.',
+  },
+  {
+    title: 'Testing guide',
+    href: 'https://github.com/imurodl/shum/blob/main/docs/testing.md',
+    copy: 'Coverage strategy, integration checks, and optional remote tests.',
+  },
+  {
+    title: 'Contributing',
+    href: 'https://github.com/imurodl/shum/blob/main/CONTRIBUTING.md',
+    copy: 'Contribution standards and workflow expectations.',
+  },
+]
+
+const installBlock = `git clone https://github.com/imurodl/shum.git
+cd shum
+go install ./cmd/shum
+shum --help`
+
+const statusBlock = `release_brief:
+  host: prod
+  project: web
+  mode: dry-run
+  backup_required: true
+  planned_service_changes: 3
+  health_probe: ready`
 </script>
 
 <template>
   <div class="app-shell">
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow-left" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow-right" aria-hidden="true"></div>
+    <div class="paper-noise" aria-hidden="true"></div>
+    <div class="ink-grid" aria-hidden="true"></div>
+    <div class="shape shape-one" aria-hidden="true"></div>
+    <div class="shape shape-two" aria-hidden="true"></div>
 
-    <header class="topbar">
+    <header class="masthead">
       <a class="brand" href="#top">
-        <span class="brand-mark">SHUM</span>
+        <span class="brand-stamp">SHUM</span>
         <span class="brand-copy">Self-Host Upgrade Manager</span>
       </a>
 
-      <nav class="topnav" aria-label="Primary">
-        <a href="#flow">Flow</a>
-        <a href="#atlas">CLI</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#resources">Resources</a>
+      <nav class="nav" aria-label="Primary">
+        <a v-for="item in navLinks" :key="item.href" :href="item.href">{{ item.label }}</a>
       </nav>
+
+      <a
+        class="masthead-link"
+        href="https://github.com/imurodl/shum#quick-start"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open quick start
+      </a>
     </header>
 
     <main class="page">
-      <section class="hero panel" id="top">
+      <section class="hero" id="top">
         <div class="hero-copy">
-          <p class="eyebrow">docker compose upgrades for self-hosted linux</p>
-          <h1>Deterministic upgrades for remote Docker Compose hosts.</h1>
-          <p class="lead">
-            SHUM is a CLI for operators managing Compose stacks on VPSes and self-hosted Linux fleets.
-            It makes upgrades previewable, policy-gated, recoverable, and easy to audit after the run.
+          <p class="section-kicker">Field manual for Compose operators</p>
+          <p class="hero-index">01</p>
+          <h1>Remote Docker Compose upgrades need procedure, not courage.</h1>
+          <p class="hero-lead">
+            SHUM is a CLI for operators who want a readable path from inspection to review. It keeps upgrades
+            explicit, policy-gated, dry-runnable, recoverable, and auditable on normal self-hosted Linux hosts.
           </p>
 
           <div class="hero-actions">
-            <a class="button button-primary" href="https://github.com/imurodl/shum" target="_blank" rel="noopener noreferrer">View source</a>
-            <a class="button button-secondary" href="#flow">See upgrade flow</a>
-            <a class="button button-secondary" href="https://github.com/imurodl/shum/blob/main/docs/testing.md" target="_blank" rel="noopener noreferrer">Read testing guide</a>
-          </div>
-
-          <div class="capability-pills">
-            <span v-for="item in capabilityPills" :key="item">{{ item }}</span>
+            <a
+              class="button button-primary"
+              href="https://github.com/imurodl/shum#quick-start"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Read docs / quick start
+            </a>
+            <a
+              class="button button-secondary"
+              href="https://github.com/imurodl/shum"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View repository
+            </a>
           </div>
         </div>
 
-        <aside class="hero-console">
-          <div class="console-head">
-            <span>release preview</span>
-            <span>prod/web</span>
+        <aside class="hero-board">
+          <div class="board-header">
+            <div>
+              <p class="section-kicker">Release brief</p>
+              <h2>Prod / web</h2>
+            </div>
+            <span class="board-status">safe path loaded</span>
           </div>
 
-          <div class="console-status">
+          <pre><code>{{ statusBlock }}</code></pre>
+
+          <div class="board-notes">
             <article>
-              <strong>policy</strong>
-              <span>backup required</span>
+              <span>Known target</span>
+              <p>Trusted SSH alias remains the operator entrypoint.</p>
             </article>
             <article>
-              <strong>probe</strong>
-              <span>health check enabled</span>
+              <span>Policy active</span>
+              <p>Backup and health constraints are attached before execution.</p>
             </article>
             <article>
-              <strong>mode</strong>
-              <span>dry-run first</span>
+              <span>Evidence retained</span>
+              <p>Run summaries and artifacts remain reviewable after the rollout.</p>
             </article>
           </div>
-
-          <pre><code>{{ previewBlock }}</code></pre>
         </aside>
       </section>
 
-      <section class="summary-grid">
-        <article v-for="item in summaryCards" :key="item.title" class="summary-card">
-          <p class="summary-title">{{ item.title }}</p>
-          <p>{{ item.copy }}</p>
-        </article>
-      </section>
-
-      <section class="panel operator-section">
-        <div class="section-head">
-          <p class="section-tag">Why operators use SHUM</p>
-          <h2>Upgrade workflows stop living in shell history.</h2>
-        </div>
-
-        <div class="operator-grid">
-          <div class="risk-panel">
-            <ul class="risk-list">
-              <li v-for="item in operatorRisks" :key="item">{{ item }}</li>
-            </ul>
-          </div>
-
-          <div class="ledger-panel">
-            <p class="ledger-head">run state</p>
-            <div class="ledger-rows">
-              <div v-for="item in ledger" :key="item[0]" class="ledger-row">
-                <span class="ledger-key">{{ item[0] }}</span>
-                <span class="ledger-value">{{ item[1] }}</span>
-              </div>
-            </div>
-          </div>
+      <section class="ticker" aria-label="Capabilities">
+        <div class="ticker-track">
+          <span v-for="item in tickerItems" :key="item">{{ item }}</span>
         </div>
       </section>
 
-      <section class="panel flow-section" id="flow">
-        <div class="section-head">
-          <p class="section-tag">Upgrade flow</p>
-          <h2>Five steps from trust to audit.</h2>
+      <section class="why" id="why">
+        <div class="why-intro">
+          <p class="section-kicker">Why this exists</p>
+          <h2>The dangerous part is usually the workflow around the upgrade.</h2>
+          <p>
+            Teams usually have SSH and Compose. What they lack is a repeatable release path when the consequences are real.
+          </p>
         </div>
 
-        <div class="flow-grid">
-          <article v-for="item in flow" :key="item.stage" class="flow-card">
-            <div class="flow-top">
-              <span class="flow-stage">{{ item.stage }}</span>
+        <div class="failure-grid">
+          <article v-for="item in failureModes" :key="item.index" class="failure-card">
+            <p class="failure-index">{{ item.index }}</p>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.copy }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="flow" id="flow">
+        <div class="flow-intro">
+          <p class="section-kicker">Operating flow</p>
+          <h2>Five moves from trust to audit.</h2>
+          <p>
+            SHUM is not a platform. It adds order to the moments where Compose upgrades usually become improvised.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article v-for="item in flowSteps" :key="item.step" class="step-card">
+            <div class="step-head">
+              <span class="step-number">{{ item.step }}</span>
               <h3>{{ item.title }}</h3>
             </div>
-            <p class="flow-copy">{{ item.copy }}</p>
+            <p>{{ item.copy }}</p>
             <pre><code>{{ item.command }}</code></pre>
           </article>
         </div>
       </section>
 
-      <section class="artifacts-section">
-        <div class="artifact-console panel">
-          <p class="section-tag">Run artifacts</p>
-          <h2>Operators can inspect what just happened.</h2>
-          <p class="artifact-copy">
-            Policy, backup artifacts, and run summaries stay close to the same CLI surface used to execute the upgrade.
-          </p>
-          <pre><code>{{ artifactBlock }}</code></pre>
-        </div>
-
-        <div class="feature-stack">
-          <article v-for="item in featureCards" :key="item.label" class="feature-card panel">
-            <p class="feature-tag">{{ item.label }}</p>
-            <h3>{{ item.title }}</h3>
-            <p class="feature-copy">{{ item.copy }}</p>
-            <pre><code>{{ item.sample }}</code></pre>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel atlas" id="atlas">
-        <div class="atlas-main">
-          <div class="section-head">
-            <p class="section-tag">CLI surface</p>
-            <h2>Command groups built for real upgrade work.</h2>
-          </div>
-
-          <div class="atlas-list">
-            <article v-for="item in commandAtlas" :key="item[0]" class="atlas-row">
-              <code>{{ item[0] }}</code>
-              <p>{{ item[1] }}</p>
-            </article>
-          </div>
-        </div>
-
-        <aside class="install-card">
-          <p class="section-tag">Install</p>
-          <pre><code>{{ bootstrap }}</code></pre>
-          <p class="install-note">Config path: <code>~/.config/shum</code></p>
-          <p class="install-note">State path: <code>~/.cache/shum</code></p>
-          <p class="install-note">Validation: <code>go test ./...</code> and optional <code>go test ./test/e2e</code></p>
-        </aside>
-      </section>
-
-      <section class="panel architecture" id="architecture">
-        <div class="section-head">
-          <p class="section-tag">Architecture</p>
-          <h2>Compact layers, explicit responsibilities.</h2>
-        </div>
-
-        <div class="architecture-grid">
-          <article v-for="item in architecture" :key="item[0]" class="architecture-card">
-            <strong>{{ item[0] }}</strong>
-            <span>{{ item[1] }}</span>
-          </article>
-        </div>
-      </section>
-
-      <footer class="footer panel" id="resources">
-        <div class="footer-copy">
-          <p class="section-tag">Resources</p>
-          <h2>Open-source infrastructure tooling, without mystery state.</h2>
+      <section class="proof" id="proof">
+        <div class="proof-summary">
+          <p class="section-kicker">Operational proof</p>
+          <h2>Trust comes from changing how upgrades are executed.</h2>
           <p>
-            SHUM is for teams that want a concrete CLI for Docker Compose upgrades on remote Linux hosts,
-            not a generic deployment platform or another dashboard layer.
+            Preview before mutation, policy before execution, recovery before panic, and readable evidence after the run.
           </p>
         </div>
 
-        <div class="resource-grid">
-          <a
-            v-for="item in resources"
-            :key="item[0]"
-            :href="item[1]"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="resource-card"
-          >
-            <p class="resource-title">{{ item[0] }}</p>
-            <p>{{ item[2] }}</p>
-          </a>
+        <div class="proof-grid">
+          <article v-for="item in proofCards" :key="item.label" class="proof-card">
+            <p class="proof-label">{{ item.label }}</p>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.copy }}</p>
+          </article>
         </div>
-      </footer>
+
+        <div class="evidence-grid">
+          <article v-for="item in evidencePanels" :key="item.label" class="evidence-card">
+            <p class="proof-label">{{ item.label }}</p>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.copy }}</p>
+            <pre><code>{{ item.code }}</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="start" id="start">
+        <div class="start-copy">
+          <p class="section-kicker">Start here</p>
+          <h2>Install the CLI and test the flow against a real host.</h2>
+          <p>
+            If the upgrade path becomes clearer, SHUM is doing its job.
+          </p>
+          <div class="start-meta">
+            <p><strong>Config</strong> <code>~/.config/shum</code></p>
+            <p><strong>State</strong> <code>~/.cache/shum</code></p>
+            <p><strong>Validation</strong> <code>go test ./...</code> and optional <code>go test ./test/e2e</code></p>
+          </div>
+        </div>
+
+        <div class="install-card">
+          <pre><code>{{ installBlock }}</code></pre>
+        </div>
+      </section>
     </main>
+
+    <footer class="footer">
+      <div class="footer-intro">
+        <p class="section-kicker">Resources</p>
+        <h2>Open-source tooling for teams that want explicit operations.</h2>
+      </div>
+
+      <div class="resource-grid">
+        <a
+          v-for="item in resourceCards"
+          :key="item.title"
+          :href="item.href"
+          class="resource-card"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <p class="resource-title">{{ item.title }}</p>
+          <p>{{ item.copy }}</p>
+        </a>
+      </div>
+    </footer>
   </div>
 </template>
