@@ -1,6 +1,4 @@
-# shum
-
-Safe, recoverable Docker Compose upgrades for self-hosted Linux fleets.
+# shum — safe, recoverable Docker Compose upgrades for self-hosted Linux fleets
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/imurodl/shum/.github/workflows/deploy-site.yml?label=site)
 ![GitHub last commit](https://img.shields.io/github/last-commit/imurodl/shum)
