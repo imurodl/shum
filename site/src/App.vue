@@ -40,6 +40,13 @@ const protocolStrip = [
   'restore-ready',
 ]
 
+const opsNotes = [
+  'no hidden control plane',
+  'sqlite + artifact state',
+  'json and human outputs',
+  'rollback prepared before rollout',
+]
+
 const evidenceCards = [
   {
     tag: 'policy',
@@ -187,30 +194,39 @@ const resources = [
           </div>
         </div>
 
-        <aside class="runbook-card">
-          <div class="runbook-header">
-            <span>release.runbook</span>
-            <span>prod/web</span>
-          </div>
-
-          <div class="runbook-layout">
-            <div>
-              <p class="runbook-label">Protocol</p>
-              <ol class="protocol-list">
-                <li>trust the host</li>
-                <li>inspect the stack</li>
-                <li>load policy</li>
-                <li>preview the change</li>
-                <li>execute with history</li>
-              </ol>
+        <div class="hero-stage">
+          <aside class="runbook-card">
+            <div class="runbook-header">
+              <span>release.runbook</span>
+              <span>prod/web</span>
             </div>
 
-            <div class="terminal-block">
-              <p class="runbook-label">Bootstrap</p>
-              <pre><code>{{ installBlock }}</code></pre>
+            <div class="runbook-layout">
+              <div>
+                <p class="runbook-label">Protocol</p>
+                <ol class="protocol-list">
+                  <li>trust the host</li>
+                  <li>inspect the stack</li>
+                  <li>load policy</li>
+                  <li>preview the change</li>
+                  <li>execute with history</li>
+                </ol>
+              </div>
+
+              <div class="terminal-block">
+                <p class="runbook-label">Bootstrap</p>
+                <pre><code>{{ installBlock }}</code></pre>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+
+          <article class="ops-note">
+            <p class="runbook-label">Operating notes</p>
+            <ul class="ops-note-list">
+              <li v-for="item in opsNotes" :key="item">{{ item }}</li>
+            </ul>
+          </article>
+        </div>
       </section>
 
       <section class="protocol-band" aria-label="Protocol strip">
@@ -287,11 +303,15 @@ shum project backup list prod web --json</code></pre>
           <h2>Five deliberate stages before and after rollout.</h2>
         </div>
 
-        <div class="workflow-track">
+        <div class="workflow-board">
           <article
             v-for="(step, index) in flow"
             :key="step.label"
-            :class="['step-card', index % 2 === 0 ? 'step-card-left' : 'step-card-right']"
+            :class="[
+              'step-card',
+              index < 3 ? 'step-card-top' : 'step-card-bottom',
+              index >= 3 ? 'step-card-wide' : '',
+            ]"
           >
             <div class="step-topline">
               <p class="step-label">{{ step.label }}</p>
