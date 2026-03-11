@@ -1,94 +1,98 @@
-# Self-Host Upgrade Manager (`shum`)
+# shum — Safe, Recoverable Compose Upgrades for Self-Hosted Infra
 
-`shum` is a CLI-first operations tool for safer Docker Compose upgrades on remote Linux hosts.
+`shum` is a CLI-first operations tool for remote Docker Compose fleets.
 
-Phase 1 is implemented (host trust and discovery), and phase 2-4 now cover planning, backups, upgrade execution, rollback hooks, and history/audit output.
+It was built to solve a concrete gap: upgrades are usually either unsafe or over-engineered.
+This tool gives you a practical middle path: deterministic planning, policy gates, rollback paths, and auditable history—without wrapping the operations in abstraction layers that hide behavior.
+
+## What the tool does
+
+- Registers and verifies remote hosts through SSH aliases.
+- Discovers and tracks compose projects with canonical naming.
+- Performs preflight checks before any mutation (availability, permissions, policy readiness).
+- Generates explicit upgrade plans before execution.
+- Enforces per-project policy: backups, restore commands, migration warnings, and health probes.
+- Executes upgrades with dry-run mode, then real run mode.
+- Stores run history, artifact checksums, and failure context for post-incident review.
+- Exposes structured output for scripting (`--json`) and human-friendly summary output.
 
 ## Quickstart
 
 ```bash
+git clone https://github.com/imurodl/shum.git
+cd shum
 go install ./cmd/shum
 
-# 1) trust a host
-shum host register myserver
-
-# 2) discover projects
-shum project discover myserver
-
-# 3) inspect one project for canonical metadata
-shum project inspect myserver web --project-directory /srv/web --json
+shum host register my-host
+shum project discover my-host
+shum project inspect my-host web --project-directory /srv/web --json
+shum project preflight my-host web
+shum project plan my-host web --json
 ```
 
-## Operational Flow
+## Standard Upgrade Flow
 
 ```bash
-# preflight check
-shum project preflight myserver web
-
-# generate plan
-shum project plan myserver web --json
-
-# configure policy
-shum project policy set myserver web \
+shum project policy set my-host web \
   --require-backup=true \
-  --backup-command "bash -c 'docker exec db pg_dumpall -U app > \"$SHUM_BACKUP_ARTIFACT\"'" \
-  --restore-command "bash -c 'cat \"$SHUM_BACKUP_ARTIFACT\" | docker exec -i db psql -U app'" \
-  --migration-warning=false \
-  --health-check "http://localhost:8080/health"
+  --backup-command "docker exec db pg_dumpall -U app > \"$SHUM_BACKUP_ARTIFACT\"" \
+  --restore-command "cat \"$SHUM_BACKUP_ARTIFACT\" | docker exec -i db psql -U app" \
+  --health-check "http://127.0.0.1:8080/health"
 
-# optional: take a backup
-shum project backup take myserver web --json
+shum project backup take my-host web --json
+shum project upgrade my-host web --dry-run --json
+shum project upgrade my-host web --json
 
-# run upgrade (dry-run first)
-shum project upgrade myserver web --dry-run --json
-shum project upgrade myserver web --json
-
-# inspect history
-shum project run list --limit 10
-shum project run list --host myserver --project web
-shum project run show run-<id> --json
-shum project backup list myserver web --json
+shum project run list --host my-host --project web --json
+shum project run show <run-id> --json
+shum project backup list my-host web --json
 ```
 
-## Install and Verification
+## CLI Surfaces
+
+- `shum host register|list|inspect`
+- `shum project discover|inspect|preflight|plan|policy|backup|upgrade|run`
+
+Run `shum --help` after installation for full command docs.
+
+## Guarantees
+
+`shum` aims to make upgrades predictable:
+
+- No command run should change state without an explicit execution step.
+- Plan and preflight data are surfaced before mutation.
+- Upgrade artifacts are persisted for recoverability and audit.
+- Every run has status transitions and summary output.
+- Failures carry context through run history.
+
+## Storage Layout
+
+- Config: `~/.config/shum/`
+- State and artifacts: `~/.cache/shum/`
+  - `state.db`
+  - `artifacts/`
+
+Artifacts are intentionally local to the operator machine by default and can be moved/rotated as part of ops policy.
+
+## Development
 
 ```bash
 go test ./...
 go build ./cmd/shum
+go test ./test/e2e # optional; requires SHUM_E2E_SSH_ALIAS env
 ```
 
-Remote-heavy tests are optional and gated by `SHUM_E2E_SSH_ALIAS`:
+Remote integration tests are opt-in and skip automatically when SSH context is missing.
 
-```bash
-export SHUM_E2E_SSH_ALIAS=your-alias
-go test ./test/e2e
-```
+## Documentation
 
-## Storage
+- [Testing Guide](./docs/testing.md)
+- [Project Site](https://imurodl.me/shum/)
 
-State and artifacts are stored under:
+## Website
 
-- Config: `~/.config/shum/`
-- Data and artifacts: `~/.cache/shum/` (`state.db`, `artifacts/`)
+The project documentation site is a Vue + Vite frontend built with Bun and deployed via GitHub Pages.
 
-## Roadmap Summary
+## License
 
-- `HOST-01..03`: host trust + discovery + inspect
-- `PLAN-01..04`: preflight and planning policies
-- `BKUP-01..03`: policy-backed backups and restore support
-- `UPGD-01..04`: upgrade execution + verification + rollback
-- `HIST-01..02`: run and backup history
-- `DOCS-01..02`: public landing documentation and command examples
-
-## Public Docs Site
-
-The docs site is built with Vue + Vite and Bun, and deployed to GitHub Pages.
-
-```bash
-cd site
-bun install
-bun run dev     # local dev server
-bun run build   # generates site/dist
-```
-
-Production publish is automated by GitHub Actions: `.github/workflows/deploy-site.yml`.
+Apache-2.0.
