@@ -85,9 +85,9 @@ const resources = [
     <main class="canvas">
       <header class="panel hero">
         <p class="eyebrow">open-source + production operations</p>
-        <h1>shum</h1>
-        <p class="subtitle">Safe, Recoverable Compose Upgrades for Self-Hosted Linux fleets.</p>
-        <p class="lead">No AI wrapper. No mystery orchestration. One concrete operations engine with trust-first SSH state and auditable upgrades.</p>
+        <h1>SHUM</h1>
+        <p class="subtitle">Safe, Host-Aware Upgrade Manager for self-hosted Linux fleets.</p>
+        <p class="lead">Safe, recoverable Docker Compose upgrades with trust-first SSH state and auditable operations.</p>
         <div class="actions">
           <a class="btn btn-primary" href="https://github.com/imurodl/shum" target="_blank" rel="noopener noreferrer">View Source</a>
           <a class="btn btn-outline" href="#workflow">View Upgrade Flow</a>
