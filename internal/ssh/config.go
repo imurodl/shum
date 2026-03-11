@@ -20,7 +20,7 @@ type ResolvedConfig struct {
 func ParseResolvedAlias(alias string) (*ResolvedConfig, error) {
 	out, err := exec.Command("ssh", "-G", alias).Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to resolve ssh alias: %w", err)
+		return nil, fmt.Errorf("failed to resolve ssh alias %q (verify Host entry exists in ~/.ssh/config): %w", alias, err)
 	}
 
 	parsed := map[string][]string{}

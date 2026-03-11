@@ -22,7 +22,7 @@ func ProbeAlias(alias string, runner *remote.Runner) (ProbeResult, error) {
 	}
 	lines := splitNonEmptyLines(out)
 	if len(lines) < 4 {
-		return ProbeResult{}, fmt.Errorf("probe output missing required lines")
+		return ProbeResult{}, fmt.Errorf("probe output missing required lines: expected 4 (os, arch, docker version, compose version) but got %d", len(lines))
 	}
 	return ProbeResult{
 		OS:             lines[0],

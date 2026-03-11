@@ -150,6 +150,9 @@ func newProjectPolicySetCommand() *cobra.Command {
 				HealthChecks:     probes,
 				MigrationWarning: migrationWarning,
 			}
+			for _, w := range validatePolicy(policy) {
+				fmt.Fprintf(cmd.ErrOrStderr(), "Warning: %s\n", w)
+			}
 			return opsSvc.SetPolicy(ctx, policy)
 		},
 	}
@@ -517,4 +520,15 @@ func renderRun(cmd *cobra.Command, run ops.RunRecord) {
 	}
 	fmt.Fprintf(cmd.OutOrStdout(), "Backup artifact: %s\n", run.BackupArtifact)
 	fmt.Fprintf(cmd.OutOrStdout(), "Events: %d\n", len(run.Events))
+}
+
+func validatePolicy(p ops.ProjectPolicy) []string {
+	var warnings []string
+	if p.RequireBackup && strings.TrimSpace(p.BackupCommand) == "" {
+		warnings = append(warnings, "require-backup is enabled but no --backup-command is set; upgrades will fail at the backup step")
+	}
+	if strings.TrimSpace(p.BackupCommand) != "" && strings.TrimSpace(p.RestoreCommand) == "" {
+		warnings = append(warnings, "backup-command is set but no --restore-command; rollbacks will use docker compose down/up instead of restoring the backup")
+	}
+	return warnings
 }

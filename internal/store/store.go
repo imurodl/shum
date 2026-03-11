@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	_ "embed"
 	"fmt"
@@ -41,6 +42,10 @@ func New(path string) (*Store, error) {
 
 func (s *Store) DB() *sql.DB {
 	return s.db
+}
+
+func (s *Store) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	return s.db.BeginTx(ctx, nil)
 }
 
 func (s *Store) Close() error {

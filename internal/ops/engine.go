@@ -195,76 +195,91 @@ func (s *Service) RunUpgrade(ctx context.Context, hostAlias, projectRef string, 
 		return UpgradeResult{}, err
 	}
 
+	tx, err := s.opsRepo.BeginTx(ctx)
+	if err != nil {
+		return UpgradeResult{}, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback() // no-op after commit
+	repo := s.opsRepo.WithTx(tx)
+
 	runID := fmt.Sprintf("run-%d", time.Now().UnixNano())
-	run, err := s.opsRepo.CreateRun(ctx, runID, hostAlias, projectRef, string(planJSON), &plan.Preflight)
+	run, err := repo.CreateRun(ctx, runID, hostAlias, projectRef, string(planJSON), &plan.Preflight)
 	if err != nil {
 		return UpgradeResult{}, err
 	}
 	_ = run
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "start", "upgrade started")
-	if err := s.opsRepo.UpdateRun(ctx, runID, RunStatusRunning, "", "", "", false); err != nil {
+	_ = repo.AddRunEvent(ctx, runID, "start", "upgrade started")
+	if err := repo.UpdateRun(ctx, runID, RunStatusRunning, "", "", "", false); err != nil {
 		return UpgradeResult{}, err
 	}
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "plan", plan.String())
+	_ = repo.AddRunEvent(ctx, runID, "plan", plan.String())
 
 	backup, needBackup := BackupResult{}, policy.RequireBackup && !opts.SkipBackup
 	if needBackup {
 		if backup, err = s.TakeBackup(ctx, hostAlias, projectRef, ""); err != nil {
-			_ = s.opsRepo.UpdateRun(ctx, runID, RunStatusFailed, "", fmt.Sprintf("backup failed: %v", err), "", true)
-			_ = s.opsRepo.AddRunEvent(ctx, runID, "backup", fmt.Sprintf("failed: %v", err))
+			_ = repo.UpdateRun(ctx, runID, RunStatusFailed, "", fmt.Sprintf("backup failed: %v", err), "", true)
+			_ = repo.AddRunEvent(ctx, runID, "backup", fmt.Sprintf("failed: %v", err))
+			_ = tx.Commit()
 			return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: "backup failed"}, err
 		}
-		_ = s.opsRepo.UpdateRun(ctx, runID, RunStatusRunning, "", "", backup.ArtifactPath, false)
-		_ = s.opsRepo.AddRunEvent(ctx, runID, "backup", fmt.Sprintf("backup recorded: %s", backup.ArtifactPath))
+		_ = repo.UpdateRun(ctx, runID, RunStatusRunning, "", "", backup.ArtifactPath, false)
+		_ = repo.AddRunEvent(ctx, runID, "backup", fmt.Sprintf("backup recorded: %s", backup.ArtifactPath))
 	}
 
 	if len(plan.Blocks) > 0 {
 		blockReason := strings.Join(plan.Blocks, "; ")
-		_ = s.opsRepo.UpdateRun(ctx, runID, RunStatusFailed, blockReason, blockReason, "", true)
-		_ = s.opsRepo.AddRunEvent(ctx, runID, "block", blockReason)
+		_ = repo.UpdateRun(ctx, runID, RunStatusFailed, blockReason, blockReason, "", true)
+		_ = repo.AddRunEvent(ctx, runID, "block", blockReason)
+		_ = tx.Commit()
 		return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: blockReason}, fmt.Errorf(blockReason)
 	}
 
 	if opts.DryRun {
 		msg := "dry-run selected, no mutation executed"
-		_ = s.opsRepo.UpdateRun(ctx, runID, RunStatusSuccess, msg, "", "", true)
-		_ = s.opsRepo.AddRunEvent(ctx, runID, "complete", msg)
+		_ = repo.UpdateRun(ctx, runID, RunStatusSuccess, msg, "", "", true)
+		_ = repo.AddRunEvent(ctx, runID, "complete", msg)
+		_ = tx.Commit()
 		return UpgradeResult{RunID: runID, Status: string(RunStatusSuccess), Summary: msg}, nil
 	}
 
 	if _, err := s.runner.Command(hostAlias, "docker compose pull"); err != nil {
 		fail := fmt.Sprintf("compose pull failed: %v", err)
-		return s.rollback(ctx, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
+		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
 	}
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "apply", "compose pull completed")
+	_ = repo.AddRunEvent(ctx, runID, "apply", "compose pull completed")
 
 	if _, err := s.runner.Command(hostAlias, "docker compose up -d"); err != nil {
 		fail := fmt.Sprintf("compose up failed: %v", err)
-		return s.rollback(ctx, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
+		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
 	}
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "apply", "compose up -d completed")
+	_ = repo.AddRunEvent(ctx, runID, "apply", "compose up -d completed")
 
 	probes := mergeProbes(policy.HealthChecks, opts.HttpProbes, opts.TcpProbes, opts.CmdProbes)
 	if err := s.verify(ctx, hostAlias, probes, outlierWaitTimeout()); err != nil {
 		fail := fmt.Sprintf("health verification failed: %v", err)
-		return s.rollback(ctx, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
+		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
 	}
 
-	if err := s.opsRepo.UpdateRun(ctx, runID, RunStatusSuccess, "upgrade completed", "", backup.ArtifactPath, true); err != nil {
+	if err := repo.UpdateRun(ctx, runID, RunStatusSuccess, "upgrade completed", "", backup.ArtifactPath, true); err != nil {
 		return UpgradeResult{}, err
 	}
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "complete", "upgrade completed")
+	_ = repo.AddRunEvent(ctx, runID, "complete", "upgrade completed")
+	if err := tx.Commit(); err != nil {
+		return UpgradeResult{}, fmt.Errorf("failed to commit upgrade record: %w", err)
+	}
 	return UpgradeResult{RunID: runID, Status: string(RunStatusSuccess), Summary: "upgrade completed"}, nil
 }
 
-func (s *Service) rollback(
+func (s *Service) rollbackTx(
 	ctx context.Context,
+	tx interface{ Commit() error },
+	repo *Repository,
 	runID, hostAlias, projectRef string,
 	policy ProjectPolicy,
 	artifactPath string,
 	reason string,
 ) (UpgradeResult, error) {
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "rollback", reason)
+	_ = repo.AddRunEvent(ctx, runID, "rollback", reason)
 	var rollbackErr error
 	if strings.TrimSpace(policy.RestoreCommand) != "" && artifactPath != "" {
 		rollbackErr = s.RestoreBackup(ctx, hostAlias, projectRef, artifactPath, policy.RestoreCommand)
@@ -273,12 +288,14 @@ func (s *Service) rollback(
 	}
 	if rollbackErr != nil {
 		statusReason := fmt.Sprintf("rollback failed: %v", rollbackErr)
-		_ = s.opsRepo.UpdateRun(ctx, runID, RunStatusFailed, "", statusReason, artifactPath, true)
-		_ = s.opsRepo.AddRunEvent(ctx, runID, "rollback-failure", statusReason)
+		_ = repo.UpdateRun(ctx, runID, RunStatusFailed, "", statusReason, artifactPath, true)
+		_ = repo.AddRunEvent(ctx, runID, "rollback-failure", statusReason)
+		_ = tx.Commit()
 		return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: statusReason}, rollbackErr
 	}
-	_ = s.opsRepo.UpdateRun(ctx, runID, RunStatusRolledBack, "upgrade rolled back", reason, artifactPath, true)
-	_ = s.opsRepo.AddRunEvent(ctx, runID, "rollback", "upgrade rolled back")
+	_ = repo.UpdateRun(ctx, runID, RunStatusRolledBack, "upgrade rolled back", reason, artifactPath, true)
+	_ = repo.AddRunEvent(ctx, runID, "rollback", "upgrade rolled back")
+	_ = tx.Commit()
 	return UpgradeResult{RunID: runID, Status: string(RunStatusRolledBack), Summary: reason}, nil
 }
 

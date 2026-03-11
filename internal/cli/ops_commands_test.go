@@ -44,6 +44,30 @@ func TestParseHealthProbesRejectsBadType(t *testing.T) {
 	}
 }
 
+func TestValidatePolicyWarnsOnMissingBackupCommand(t *testing.T) {
+	p := ops.ProjectPolicy{RequireBackup: true, BackupCommand: ""}
+	warnings := validatePolicy(p)
+	if len(warnings) == 0 {
+		t.Fatal("expected warning for require-backup without backup-command")
+	}
+}
+
+func TestValidatePolicyWarnsOnMissingRestoreCommand(t *testing.T) {
+	p := ops.ProjectPolicy{BackupCommand: "pg_dump", RestoreCommand: ""}
+	warnings := validatePolicy(p)
+	if len(warnings) == 0 {
+		t.Fatal("expected warning for backup-command without restore-command")
+	}
+}
+
+func TestValidatePolicyNoWarningsWhenComplete(t *testing.T) {
+	p := ops.ProjectPolicy{RequireBackup: true, BackupCommand: "pg_dump", RestoreCommand: "pg_restore"}
+	warnings := validatePolicy(p)
+	if len(warnings) != 0 {
+		t.Fatalf("expected no warnings, got %v", warnings)
+	}
+}
+
 func TestPlanRenderTypeCompatibility(t *testing.T) {
 	probe := ops.HealthProbe{Type: "http", Target: "http://localhost", Timeout: 5}
 	if probe.Type != "http" {

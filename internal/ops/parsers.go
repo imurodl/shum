@@ -14,6 +14,10 @@ type composePSLine struct {
 	Health  string `json:"Health"`
 }
 
+// extractServiceChanges parses `docker compose ps --format json` output into
+// ServiceChange entries. Name (container name, e.g. "web-1") takes priority
+// over Service (compose service name, e.g. "web") because Name is always
+// unique; older Compose versions may only populate one of the two fields.
 func extractServiceChanges(raw string) []ServiceChange {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
@@ -44,6 +48,26 @@ func extractServiceChanges(raw string) []ServiceChange {
 	return out
 }
 
+// parseComposePS handles three Docker Compose output formats for
+// `docker compose ps --format json`:
+//
+// Format 1 — JSON array (Docker Compose v2.21+):
+//
+//	[{"Service":"web","Image":"nginx:1.27","State":"running","Health":"healthy"}, ...]
+//
+// Format 2 — Newline-delimited JSON objects (Docker Compose v2.0–v2.20):
+//
+//	{"Name":"web-1","Image":"nginx:1.27","State":"running"}
+//	{"Name":"api-1","Image":"app:latest","State":"running"}
+//
+// Format 3 — JSON object keyed by service name (some Compose v1 plugins):
+//
+//	{"web":{"Service":"web","Image":"nginx","State":"running","Health":"healthy"}}
+//
+// The parser tries Format 1 first (input starts with '['), then falls back to
+// line-by-line parsing which handles both Format 2 and Format 3. This ordering
+// ensures compatibility across Docker Compose versions without requiring the
+// user to specify which version they run.
 func parseComposePS(raw string, out *[]composePSLine) error {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {

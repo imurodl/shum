@@ -2,6 +2,7 @@ package remote
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -24,7 +25,12 @@ func (r *Runner) Command(alias string, command string) (string, error) {
 	defer cancel()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("ssh command failed: %w: %s", err, strings.TrimSpace(string(out)))
+		output := strings.TrimSpace(string(out))
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 255 {
+			return "", fmt.Errorf("ssh connection to %q failed: %s", alias, output)
+		}
+		return "", fmt.Errorf("remote command on %q failed: %w: %s", alias, err, output)
 	}
 	return strings.TrimSpace(string(out)), nil
 }
