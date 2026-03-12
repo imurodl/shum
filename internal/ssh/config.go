@@ -55,8 +55,8 @@ func ParseResolvedAlias(alias string) (*ResolvedConfig, error) {
 	if usr := strings.TrimSpace(firstOrEmpty(parsed["user"])); usr != "" {
 		cfg.User = usr
 	}
-	cfg.IdentityFiles = uniqueStrings(parsed["identityfile"])
-	cfg.KnownHostFiles = uniqueStrings(append(parsed["userknownhostsfile"], parsed["globalknownhostsfile"]...))
+	cfg.IdentityFiles = uniqueStrings(expandFieldValues(parsed["identityfile"]))
+	cfg.KnownHostFiles = uniqueStrings(expandFieldValues(append(parsed["userknownhostsfile"], parsed["globalknownhostsfile"]...)))
 
 	if raw := firstOrEmpty(parsed["port"]); raw != "" {
 		port, err := strconv.Atoi(raw)
@@ -91,6 +91,14 @@ func uniqueStrings(values []string) []string {
 		}
 		seen[value] = struct{}{}
 		out = append(out, value)
+	}
+	return out
+}
+
+func expandFieldValues(values []string) []string {
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		out = append(out, strings.Fields(value)...)
 	}
 	return out
 }
