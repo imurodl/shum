@@ -1,14 +1,13 @@
 package ssh
 
 import (
+	"crypto/sha256"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"os/exec"
-	"regexp"
 	"strings"
 )
-
-var fingerprintRegex = regexp.MustCompile(`\s([A-Za-z0-9+/=]+)\s`)
 
 func VerifyHostKey(host string, port int, knownHostFiles []string) (string, error) {
 	targets := []string{host}
@@ -39,9 +38,22 @@ func extractFingerprint(output []byte) string {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		m := fingerprintRegex.FindStringSubmatch(line)
-		if len(m) == 2 {
-			return m[1]
+		fields := strings.Fields(line)
+		if len(fields) < 3 {
+			continue
+		}
+		keyData := fields[2]
+		decoded, err := base64.StdEncoding.DecodeString(keyData)
+		if err != nil {
+			continue
+		}
+		sum := sha256.Sum256(decoded)
+		return "SHA256:" + base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(sum[:])
+	}
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
 		}
 	}
 	return ""

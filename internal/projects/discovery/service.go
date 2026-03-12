@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/imurodl/shum/internal/hosts"
@@ -76,38 +77,69 @@ func (s *Service) discoverRuntime(ctx context.Context, hostAlias string) ([]Runt
 		return alt, nil
 	}
 
-	var parsed []RuntimeProject
+	parsed := parseComposeLSOutput(raw)
+	if len(parsed) == 0 {
+		return nil, fmt.Errorf("no projects found")
+	}
+	return parsed, nil
+}
+
+func parseComposeLSOutput(raw string) []RuntimeProject {
+	type composeLSRow struct {
+		Name  string `json:"Name"`
+		Files string `json:"ConfigFiles"`
+	}
+
+	makeProject := func(row composeLSRow) RuntimeProject {
+		project := RuntimeProject{
+			Name:       strings.TrimSpace(row.Name),
+			Status:     projects.StatusRuntimeOnly,
+			Source:     "compose ls",
+			RawCommand: "docker compose ls --all --format json",
+			Profiles:   []string{},
+		}
+		if row.Files != "" {
+			files := strings.Split(row.Files, ",")
+			for i := range files {
+				files[i] = strings.TrimSpace(files[i])
+			}
+			project.ComposeFiles = files
+			if len(files) > 0 && files[0] != "" {
+				project.Directory = filepath.Dir(files[0])
+			}
+		}
+		return project
+	}
+
+	var rows []composeLSRow
+	if err := json.Unmarshal([]byte(raw), &rows); err == nil {
+		out := make([]RuntimeProject, 0, len(rows))
+		for _, row := range rows {
+			if strings.TrimSpace(row.Name) == "" {
+				continue
+			}
+			out = append(out, makeProject(row))
+		}
+		return out
+	}
+
+	out := []RuntimeProject{}
 	lines := strings.Split(raw, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
-			var row struct {
-				Name      string `json:"Name"`
-				StatusCode int    `json:"StatusCode"`
-				Files     string `json:"ConfigFiles"`
-			}
+		var row composeLSRow
 		if err := json.Unmarshal([]byte(line), &row); err != nil {
 			continue
-			}
-			name := row.Name
-			project := RuntimeProject{
-				Name:       name,
-				Status:     projects.StatusRuntimeOnly,
-			Source:     "compose ls",
-			RawCommand: "docker compose ls --all --format json",
-			Profiles:   []string{},
 		}
-			if row.Files != "" {
-				project.ComposeFiles = strings.Split(row.Files, ",")
-			}
-			parsed = append(parsed, project)
+		if strings.TrimSpace(row.Name) == "" {
+			continue
+		}
+		out = append(out, makeProject(row))
 	}
-	if len(parsed) == 0 {
-		return nil, fmt.Errorf("no projects found")
-	}
-	return parsed, nil
+	return out
 }
 
 func (s *Service) discoverFromContainers(ctx context.Context, hostAlias string) ([]RuntimeProject, error) {

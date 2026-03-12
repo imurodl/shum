@@ -1,11 +1,14 @@
 package ssh
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestExtractFingerprint(t *testing.T) {
-	out := []byte("127.0.0.1 ssh-rsa AAAAB3NzaC1yc2E AAAAB3NzaC1yc2E comment")
+	out := []byte("|1|example|example ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBDo4U9MMH9AQaJzYduH26WmQpzAv0MLoli0HApnJehs")
 	fp := extractFingerprint(out)
-	if fp == "" {
-		t.Fatalf("expected a parsed fingerprint")
+	if !strings.HasPrefix(fp, "SHA256:") {
+		t.Fatalf("expected a sha256 fingerprint, got %q", fp)
 	}
 }

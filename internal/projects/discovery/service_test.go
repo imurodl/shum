@@ -18,3 +18,33 @@ func TestRenderCountByStatus(t *testing.T) {
 		t.Fatalf("unexpected counts: %v", counts)
 	}
 }
+
+func TestParseComposeLSOutputArray(t *testing.T) {
+	raw := `[{"Name":"politech","ConfigFiles":"/home/ubuntu/politech/docker-compose.yml"},{"Name":"rss-proxy","ConfigFiles":"/home/ubuntu/rss-proxy/docker-compose.yml"}]`
+
+	got := parseComposeLSOutput(raw)
+	if len(got) != 2 {
+		t.Fatalf("expected 2 projects, got %d", len(got))
+	}
+	if got[0].Name != "politech" {
+		t.Fatalf("unexpected first project: %+v", got[0])
+	}
+	if got[0].Directory != "/home/ubuntu/politech" {
+		t.Fatalf("unexpected project directory: %+v", got[0])
+	}
+	if len(got[0].ComposeFiles) != 1 || got[0].ComposeFiles[0] != "/home/ubuntu/politech/docker-compose.yml" {
+		t.Fatalf("unexpected compose files: %+v", got[0].ComposeFiles)
+	}
+}
+
+func TestParseComposeLSOutputLineDelimited(t *testing.T) {
+	raw := "{\"Name\":\"politech\",\"ConfigFiles\":\"/home/ubuntu/politech/docker-compose.yml\"}\n{\"Name\":\"rss-proxy\",\"ConfigFiles\":\"/home/ubuntu/rss-proxy/docker-compose.yml\"}\n"
+
+	got := parseComposeLSOutput(raw)
+	if len(got) != 2 {
+		t.Fatalf("expected 2 projects, got %d", len(got))
+	}
+	if got[1].Name != "rss-proxy" {
+		t.Fatalf("unexpected second project: %+v", got[1])
+	}
+}

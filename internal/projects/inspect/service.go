@@ -38,11 +38,26 @@ func (s *Service) Inspect(ctx context.Context, hostAlias string, options Inspect
 		return InspectResult{}, err
 	}
 
-	args := []string{}
-	if options.ProjectName != "" {
-		args = append(args, "-p", options.ProjectName)
+	projectDir := options.ProjectDir
+	if projectDir == "" {
+		projectDir = project.ProjectDirectory
 	}
-	for _, file := range options.Files {
+
+	projectName := options.ProjectName
+	if projectName == "" {
+		projectName = project.ProjectName
+	}
+
+	files := options.Files
+	if len(files) == 0 && len(project.ComposeFiles) > 0 {
+		files = append([]string(nil), project.ComposeFiles...)
+	}
+
+	args := []string{}
+	if projectName != "" {
+		args = append(args, "-p", projectName)
+	}
+	for _, file := range files {
 		args = append(args, "-f", file)
 	}
 	for _, profile := range options.Profiles {
@@ -53,14 +68,15 @@ func (s *Service) Inspect(ctx context.Context, hostAlias string, options Inspect
 	}
 
 	composePrefix := "docker compose"
-	if options.ProjectDir != "" {
-		composePrefix = fmt.Sprintf("cd %q && %s", options.ProjectDir, composePrefix)
+	if projectDir != "" {
+		composePrefix = fmt.Sprintf("cd %q && %s", projectDir, composePrefix)
 	}
 
-	configCmd := composePrefix + " config --format json"
+	composeCommand := composePrefix
 	if len(args) > 0 {
-		configCmd = fmt.Sprintf("%s %s", composePrefix, strings.TrimSpace(strings.Join(args, " "))) + " config --format json"
+		composeCommand = fmt.Sprintf("%s %s", composePrefix, strings.TrimSpace(strings.Join(args, " ")))
 	}
+	configCmd := composeCommand + " config --format json"
 	configRaw, err := s.runner.Command(host.Alias, configCmd)
 	if err != nil {
 		project.Status = projects.StatusBlocked
@@ -75,12 +91,13 @@ func (s *Service) Inspect(ctx context.Context, hostAlias string, options Inspect
 		}, nil
 	}
 
-	servicesRaw, _ := s.runner.Command(host.Alias, composePrefix+" config --services")
-	envRaw, _ := s.runner.Command(host.Alias, composePrefix+" config --environment")
-	profilesRaw, _ := s.runner.Command(host.Alias, composePrefix+" config --profiles")
-	volumesRaw, _ := s.runner.Command(host.Alias, composePrefix+" config --volumes")
-	networksRaw, _ := s.runner.Command(host.Alias, composePrefix+" config --networks")
-	psRaw, _ := s.runner.Command(host.Alias, composePrefix+" ps --format json")
+	servicesRaw, _ := s.runner.Command(host.Alias, composeCommand+" config --services")
+	envRaw, _ := s.runner.Command(host.Alias, composeCommand+" config --environment")
+	profilesRaw, _ := s.runner.Command(host.Alias, composeCommand+" config --profiles")
+	volumesRaw, _ := s.runner.Command(host.Alias, composeCommand+" config --volumes")
+	networksRaw, _ := s.runner.Command(host.Alias, composeCommand+" config --networks")
+	psRaw, _ := s.runner.Command(host.Alias, composeCommand+" ps --format json")
+	declaredProfiles, activeProfiles := resolveProfileOutputs(profilesRaw, options.Profiles)
 
 	result := InspectResult{
 		HostAlias:       host.Alias,
@@ -89,8 +106,8 @@ func (s *Service) Inspect(ctx context.Context, hostAlias string, options Inspect
 		Services:        splitLines(servicesRaw),
 		Volumes:         splitLines(volumesRaw),
 		Networks:        splitLines(networksRaw),
-		Profiles:        splitLines(envRaw),
-		ActiveProfiles:   splitLines(profilesRaw),
+		Profiles:        declaredProfiles,
+		ActiveProfiles:  activeProfiles,
 		Status:          string(projects.StatusCanonical),
 		Config:          maybeRedactConfig(configRaw, options.ShowConfig),
 		Reasons:         []string{},
@@ -150,6 +167,12 @@ func splitLines(raw string) []string {
 		out = append(out, line)
 	}
 	return out
+}
+
+func resolveProfileOutputs(raw string, selected []string) ([]string, []string) {
+	declared := splitLines(raw)
+	active := append([]string(nil), selected...)
+	return declared, active
 }
 
 func maybeRedactConfig(raw string, show bool) string {
