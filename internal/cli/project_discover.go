@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"encoding/json"
-	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -32,13 +31,6 @@ func newProjectDiscoverCommand() *cobra.Command {
 				return err
 			}
 
-			for i := range paths {
-				var err error
-				paths[i], err = filepath.Abs(paths[i])
-				if err != nil {
-					return err
-				}
-			}
 			results, err := discover.Discover(ctx, discovery.DiscoverOptions{
 				HostAlias: alias,
 				Paths:     paths,

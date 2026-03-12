@@ -1,7 +1,6 @@
 package inspect
 
 import (
-	"context"
 	"strings"
 )
 
@@ -46,5 +45,3 @@ func dedupe(values []string) []string {
 	}
 	return out
 }
-
-func _ctx(_ context.Context) {}

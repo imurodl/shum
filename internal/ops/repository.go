@@ -89,9 +89,6 @@ func (r *Repository) GetPolicy(ctx context.Context, hostAlias, projectRef string
 	if p.HealthChecks == nil {
 		p.HealthChecks = []HealthProbe{}
 	}
-	if p.BackupCommand == "" {
-		p.BackupCommand = ""
-	}
 	return p, nil
 }
 

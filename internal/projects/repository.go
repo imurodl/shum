@@ -79,7 +79,7 @@ func (r *ProjectRepository) UpsertProject(ctx context.Context, p ProjectRecord) 
 func boolToInt(v bool) int {
 	if v {
 		return 1
-} 
+	}
 	return 0
 }
 
@@ -116,8 +116,12 @@ func (r *ProjectRepository) ListByHost(ctx context.Context, hostAlias string) ([
 		}
 		p.HostAlias = hostAlias
 		p.Status = ProjectStatus(status)
-		_ = json.Unmarshal([]byte(filesRaw), &p.ComposeFiles)
-		_ = json.Unmarshal([]byte(profileRaw), &p.ActiveProfiles)
+		if err := json.Unmarshal([]byte(filesRaw), &p.ComposeFiles); err != nil {
+			return nil, fmt.Errorf("corrupt compose_files for %s/%s: %w", hostAlias, p.ProjectRef, err)
+		}
+		if err := json.Unmarshal([]byte(profileRaw), &p.ActiveProfiles); err != nil {
+			return nil, fmt.Errorf("corrupt active_profiles for %s/%s: %w", hostAlias, p.ProjectRef, err)
+		}
 		p.DiscoveredAt, _ = time.Parse(time.RFC3339, discoveredRaw)
 		p.UpdatedAt, _ = time.Parse(time.RFC3339, updatedRaw)
 		out = append(out, p)
@@ -155,8 +159,12 @@ func (r *ProjectRepository) GetProject(ctx context.Context, hostAlias, ref strin
 	p.HostAlias = hostAlias
 	p.ProjectRef = ref
 	p.Status = ProjectStatus(status)
-	_ = json.Unmarshal([]byte(filesRaw), &p.ComposeFiles)
-	_ = json.Unmarshal([]byte(profileRaw), &p.ActiveProfiles)
+	if err := json.Unmarshal([]byte(filesRaw), &p.ComposeFiles); err != nil {
+		return ProjectRecord{}, fmt.Errorf("corrupt compose_files for %s/%s: %w", hostAlias, ref, err)
+	}
+	if err := json.Unmarshal([]byte(profileRaw), &p.ActiveProfiles); err != nil {
+		return ProjectRecord{}, fmt.Errorf("corrupt active_profiles for %s/%s: %w", hostAlias, ref, err)
+	}
 	p.DiscoveredAt, _ = time.Parse(time.RFC3339, discoveredRaw)
 	p.UpdatedAt, _ = time.Parse(time.RFC3339, updatedRaw)
 	return p, nil

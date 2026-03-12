@@ -65,9 +65,6 @@ func ParseResolvedAlias(alias string) (*ResolvedConfig, error) {
 		}
 		cfg.Port = port
 	}
-	if cfg.User == "" {
-		cfg.User = ""
-	}
 	return cfg, nil
 }
 

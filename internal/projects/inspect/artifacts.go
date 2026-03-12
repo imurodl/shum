@@ -2,8 +2,6 @@ package inspect
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,13 +27,7 @@ func (s *Service) saveArtifacts(ctx context.Context, hostAlias, projectRef strin
 	if mountsRaw != "" {
 		_ = os.WriteFile(filepath.Join(base, "mounts.json"), []byte(mountsRaw), 0o644)
 	}
-	_ = shaString(configRaw)
 	return nil
-}
-
-func shaString(raw string) string {
-	sum := sha256.Sum256([]byte(raw))
-	return hex.EncodeToString(sum[:])
 }
 
 func ArtifactPath(base, hostAlias, projectRef, name string) string {

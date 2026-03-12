@@ -106,9 +106,16 @@ func normalizeCommandVersion(raw string) string {
 	return strings.TrimSpace(lines[0])
 }
 
+func composeCmd(projectDir string) string {
+	if projectDir == "" {
+		return "docker compose"
+	}
+	return fmt.Sprintf("cd %q && docker compose", projectDir)
+}
+
 func (s *PlanningService) BuildPlan(
 	ctx context.Context,
-	hostAlias, projectRef string,
+	hostAlias, projectRef, projectDir string,
 	policy ProjectPolicy,
 ) (Plan, error) {
 	if ctx.Err() != nil {
@@ -120,13 +127,14 @@ func (s *PlanningService) BuildPlan(
 		return Plan{}, err
 	}
 
+	compose := composeCmd(projectDir)
 	plan := Plan{
 		HostAlias:  hostAlias,
 		ProjectRef: projectRef,
 		Preflight:  preflight,
 		Policy:     policy,
 		CreatedAt:  time.Now().UTC().Format(time.RFC3339),
-		Actions:    defaultPlanActions(),
+		Actions:    defaultPlanActions(compose),
 		Services:   []ServiceChange{},
 	}
 
@@ -135,7 +143,7 @@ func (s *PlanningService) BuildPlan(
 		return plan, nil
 	}
 
-	raw, err := s.runner.Command(hostAlias, "docker compose ps --format json")
+	raw, err := s.runner.Command(hostAlias, compose+" ps --format json")
 	if err != nil {
 		plan.Blocks = append(plan.Blocks, fmt.Sprintf("failed to inspect compose services: %v", err))
 	} else {
@@ -184,16 +192,16 @@ func buildPlanBlocks(preflight PreflightResult, policy ProjectPolicy, services [
 	return blocks
 }
 
-func defaultPlanActions() []PlanAction {
+func defaultPlanActions(compose string) []PlanAction {
 	return []PlanAction{
 		{
 			Name:  "prepare",
-			Cmd:   "docker compose pull",
+			Cmd:   compose + " pull",
 			Notes: "Download newer images before upgrade for deterministic deployment",
 		},
 		{
 			Name:  "apply",
-			Cmd:   "docker compose up -d",
+			Cmd:   compose + " up -d",
 			Notes: "Apply new containers and restart services with new images",
 		},
 	}

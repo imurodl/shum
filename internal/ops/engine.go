@@ -64,7 +64,8 @@ func (s *Service) ResolvePolicy(ctx context.Context, hostAlias, projectRef strin
 }
 
 func (s *Service) Plan(ctx context.Context, hostAlias, projectRef string, policy *ProjectPolicy) (Plan, error) {
-	if err := s.ensureProjectExists(ctx, hostAlias, projectRef); err != nil {
+	project, err := s.projectRepo.GetProject(ctx, hostAlias, projectRef)
+	if err != nil {
 		return Plan{}, err
 	}
 	if policy == nil {
@@ -74,7 +75,7 @@ func (s *Service) Plan(ctx context.Context, hostAlias, projectRef string, policy
 		}
 		policy = &p
 	}
-	return s.planner.BuildPlan(ctx, hostAlias, projectRef, *policy)
+	return s.planner.BuildPlan(ctx, hostAlias, projectRef, project.ProjectDirectory, *policy)
 }
 
 func (s *Service) SetPolicy(ctx context.Context, p ProjectPolicy) error {
@@ -175,9 +176,11 @@ func (s *Service) RestoreBackup(ctx context.Context, hostAlias, projectRef strin
 }
 
 func (s *Service) RunUpgrade(ctx context.Context, hostAlias, projectRef string, opts UpgradeOptions) (UpgradeResult, error) {
-	if err := s.ensureProjectExists(ctx, hostAlias, projectRef); err != nil {
+	project, err := s.projectRepo.GetProject(ctx, hostAlias, projectRef)
+	if err != nil {
 		return UpgradeResult{}, err
 	}
+	compose := composeCmd(project.ProjectDirectory)
 	policy, err := s.opsRepo.GetPolicy(ctx, hostAlias, projectRef)
 	if err != nil {
 		return UpgradeResult{}, err
@@ -242,22 +245,22 @@ func (s *Service) RunUpgrade(ctx context.Context, hostAlias, projectRef string, 
 		return UpgradeResult{RunID: runID, Status: string(RunStatusSuccess), Summary: msg}, nil
 	}
 
-	if _, err := s.runner.Command(hostAlias, "docker compose pull"); err != nil {
+	if _, err := s.runner.Command(hostAlias, compose+" pull"); err != nil {
 		fail := fmt.Sprintf("compose pull failed: %v", err)
-		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
+		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail, compose)
 	}
 	_ = repo.AddRunEvent(ctx, runID, "apply", "compose pull completed")
 
-	if _, err := s.runner.Command(hostAlias, "docker compose up -d"); err != nil {
+	if _, err := s.runner.Command(hostAlias, compose+" up -d"); err != nil {
 		fail := fmt.Sprintf("compose up failed: %v", err)
-		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
+		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail, compose)
 	}
 	_ = repo.AddRunEvent(ctx, runID, "apply", "compose up -d completed")
 
 	probes := mergeProbes(policy.HealthChecks, opts.HttpProbes, opts.TcpProbes, opts.CmdProbes)
-	if err := s.verify(ctx, hostAlias, probes, outlierWaitTimeout()); err != nil {
+	if err := s.verify(ctx, hostAlias, compose, probes, outlierWaitTimeout()); err != nil {
 		fail := fmt.Sprintf("health verification failed: %v", err)
-		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail)
+		return s.rollbackTx(ctx, tx, repo, runID, hostAlias, projectRef, policy, backup.ArtifactPath, fail, compose)
 	}
 
 	if err := repo.UpdateRun(ctx, runID, RunStatusSuccess, "upgrade completed", "", backup.ArtifactPath, true); err != nil {
@@ -278,13 +281,14 @@ func (s *Service) rollbackTx(
 	policy ProjectPolicy,
 	artifactPath string,
 	reason string,
+	compose string,
 ) (UpgradeResult, error) {
 	_ = repo.AddRunEvent(ctx, runID, "rollback", reason)
 	var rollbackErr error
 	if strings.TrimSpace(policy.RestoreCommand) != "" && artifactPath != "" {
 		rollbackErr = s.RestoreBackup(ctx, hostAlias, projectRef, artifactPath, policy.RestoreCommand)
 	} else {
-		_, rollbackErr = s.runner.Command(hostAlias, "docker compose down && docker compose up -d")
+		_, rollbackErr = s.runner.Command(hostAlias, compose+" down && "+compose+" up -d")
 	}
 	if rollbackErr != nil {
 		statusReason := fmt.Sprintf("rollback failed: %v", rollbackErr)
@@ -299,12 +303,12 @@ func (s *Service) rollbackTx(
 	return UpgradeResult{RunID: runID, Status: string(RunStatusRolledBack), Summary: reason}, nil
 }
 
-func (s *Service) verify(ctx context.Context, hostAlias string, probes []HealthProbe, timeout time.Duration) error {
+func (s *Service) verify(ctx context.Context, hostAlias, compose string, probes []HealthProbe, timeout time.Duration) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	if len(probes) == 0 {
-		raw, err := s.runner.Command(hostAlias, "docker compose ps --format json")
+		raw, err := s.runner.Command(hostAlias, compose+" ps --format json")
 		if err != nil {
 			return err
 		}

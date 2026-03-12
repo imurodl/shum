@@ -19,9 +19,6 @@ func RenderSummary(out io.Writer, result InspectResult) {
 			fmt.Fprintln(out, " -", reason)
 		}
 	}
-	if len(result.Config) > 0 {
-		fmt.Fprintln(out, "Config: hidden by default")
-	}
 }
 
 func RenderJSON(out io.Writer, payload InspectResult) error {

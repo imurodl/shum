@@ -105,7 +105,9 @@ func (r *Repository) List(ctx context.Context) ([]Host, error) {
 		if err != nil {
 			return nil, err
 		}
-		_ = json.Unmarshal([]byte(rawFiles), &h.KnownHostsFiles)
+		if err := json.Unmarshal([]byte(rawFiles), &h.KnownHostsFiles); err != nil {
+			return nil, fmt.Errorf("corrupt known_hosts_files for %s: %w", h.Alias, err)
+		}
 		if parsed, err := time.Parse(time.RFC3339, verifiedRaw); err == nil {
 			h.LastVerifiedAt = parsed
 		}
@@ -144,7 +146,9 @@ func (r *Repository) Get(ctx context.Context, alias string) (Host, error) {
 	if err != nil {
 		return Host{}, err
 	}
-	_ = json.Unmarshal([]byte(rawFiles), &h.KnownHostsFiles)
+	if err := json.Unmarshal([]byte(rawFiles), &h.KnownHostsFiles); err != nil {
+		return Host{}, fmt.Errorf("corrupt known_hosts_files for %s: %w", h.Alias, err)
+	}
 	if parsed, err := time.Parse(time.RFC3339, verifiedRaw); err == nil {
 		h.LastVerifiedAt = parsed
 	}

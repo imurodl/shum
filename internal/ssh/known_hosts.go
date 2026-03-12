@@ -50,11 +50,5 @@ func extractFingerprint(output []byte) string {
 		sum := sha256.Sum256(decoded)
 		return "SHA256:" + base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(sum[:])
 	}
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-	}
 	return ""
 }
