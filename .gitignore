@@ -5,6 +5,6 @@ state.db
 test/data
 dist/
 .cache/
-shum
+/shum
 site/node_modules/
 site/dist/

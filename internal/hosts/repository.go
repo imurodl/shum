@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/your-org/shum/internal/store"
+	"github.com/imurodl/shum/internal/store"
 )
 
 type Host struct {

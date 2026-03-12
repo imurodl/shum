@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/your-org/shum/internal/remote"
+	"github.com/imurodl/shum/internal/remote"
 )
 
 type ProbeResult struct {

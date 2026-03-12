@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/your-org/shum/internal/projects"
+	"github.com/imurodl/shum/internal/projects"
 )
 
 type SummaryOptions struct {

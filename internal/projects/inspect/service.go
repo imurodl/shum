@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/your-org/shum/internal/hosts"
-	"github.com/your-org/shum/internal/projects"
-	"github.com/your-org/shum/internal/remote"
+	"github.com/imurodl/shum/internal/hosts"
+	"github.com/imurodl/shum/internal/projects"
+	"github.com/imurodl/shum/internal/remote"
 )
 
 type Service struct {

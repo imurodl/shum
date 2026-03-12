@@ -1,4 +1,4 @@
-module github.com/your-org/shum
+module github.com/imurodl/shum
 
 go 1.22
 

@@ -1,6 +1,6 @@
 package discovery
 
-import "github.com/your-org/shum/internal/projects"
+import "github.com/imurodl/shum/internal/projects"
 
 type RuntimeProject struct {
 	Name       string            `json:"name"`

@@ -143,10 +143,12 @@ const resourceCards = [
   },
 ]
 
-const installBlock = `git clone https://github.com/imurodl/shum.git
-cd shum
-go install ./cmd/shum
+const installBlock = `go install github.com/imurodl/shum/cmd/shum@latest
 shum --help`
+
+const sourceInstallBlock = `git clone https://github.com/imurodl/shum.git
+cd shum
+go install ./cmd/shum`
 
 const statusBlock = `release_brief:
   host: prod
@@ -331,6 +333,8 @@ const statusBlock = `release_brief:
 
         <div class="install-card">
           <pre><code>{{ installBlock }}</code></pre>
+          <p class="install-note">Source build:</p>
+          <pre><code>{{ sourceInstallBlock }}</code></pre>
         </div>
       </section>
     </main>

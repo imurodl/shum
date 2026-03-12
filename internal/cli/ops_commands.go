@@ -8,12 +8,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/your-org/shum/internal/config"
-	"github.com/your-org/shum/internal/hosts"
-	"github.com/your-org/shum/internal/ops"
-	"github.com/your-org/shum/internal/projects"
-	"github.com/your-org/shum/internal/remote"
-	"github.com/your-org/shum/internal/store"
+	"github.com/imurodl/shum/internal/config"
+	"github.com/imurodl/shum/internal/hosts"
+	"github.com/imurodl/shum/internal/ops"
+	"github.com/imurodl/shum/internal/projects"
+	"github.com/imurodl/shum/internal/remote"
+	"github.com/imurodl/shum/internal/store"
 )
 
 func newProjectPreflightCommand() *cobra.Command {

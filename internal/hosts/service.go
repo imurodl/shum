@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/your-org/shum/internal/remote"
-	ssh "github.com/your-org/shum/internal/ssh"
+	"github.com/imurodl/shum/internal/remote"
+	ssh "github.com/imurodl/shum/internal/ssh"
 )
 
 type Service struct {

@@ -634,9 +634,21 @@ pre code {
 }
 
 .install-card {
+  display: grid;
+  gap: 0.9rem;
   border: 2px solid var(--line);
   background: #201814;
   box-shadow: var(--shadow);
+}
+
+.install-note {
+  margin: 0;
+  padding: 0 1rem;
+  color: #efe8d9;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .footer {

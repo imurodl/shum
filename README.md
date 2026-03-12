@@ -42,6 +42,12 @@
 ## Install
 
 ```bash
+go install github.com/imurodl/shum/cmd/shum@latest
+```
+
+Source build:
+
+```bash
 git clone https://github.com/imurodl/shum.git
 cd shum
 go install ./cmd/shum

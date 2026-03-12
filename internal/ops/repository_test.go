@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/your-org/shum/internal/store"
+	"github.com/imurodl/shum/internal/store"
 )
 
 func TestListRunsFiltersByHostAndProject(t *testing.T) {

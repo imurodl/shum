@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	"github.com/your-org/shum/internal/ops"
+	"github.com/imurodl/shum/internal/ops"
 )
 
 func TestParseHealthProbes(t *testing.T) {

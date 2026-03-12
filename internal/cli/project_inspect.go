@@ -7,13 +7,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/your-org/shum/internal/config"
-	"github.com/your-org/shum/internal/hosts"
-	"github.com/your-org/shum/internal/projects"
-	"github.com/your-org/shum/internal/projects/discovery"
-	"github.com/your-org/shum/internal/projects/inspect"
-	"github.com/your-org/shum/internal/remote"
-	"github.com/your-org/shum/internal/store"
+	"github.com/imurodl/shum/internal/config"
+	"github.com/imurodl/shum/internal/hosts"
+	"github.com/imurodl/shum/internal/projects"
+	"github.com/imurodl/shum/internal/projects/discovery"
+	"github.com/imurodl/shum/internal/projects/inspect"
+	"github.com/imurodl/shum/internal/remote"
+	"github.com/imurodl/shum/internal/store"
 )
 
 func newProjectInspectCommand() *cobra.Command {

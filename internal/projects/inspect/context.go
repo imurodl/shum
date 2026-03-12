@@ -1,6 +1,6 @@
 package inspect
 
-import "github.com/your-org/shum/internal/projects"
+import "github.com/imurodl/shum/internal/projects"
 
 type InspectOptions struct {
 	ProjectRef      string

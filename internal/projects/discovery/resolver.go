@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"github.com/your-org/shum/internal/projects"
+	"github.com/imurodl/shum/internal/projects"
 )
 
 var defaultComposeFilenames = []string{

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/your-org/shum/internal/store"
+	"github.com/imurodl/shum/internal/store"
 )
 
 // DBTX is the common interface satisfied by both *sql.DB and *sql.Tx,

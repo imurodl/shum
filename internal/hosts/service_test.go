@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/your-org/shum/internal/remote"
+	"github.com/imurodl/shum/internal/remote"
 )
 
 func TestHostServiceTrustSummary(t *testing.T) {

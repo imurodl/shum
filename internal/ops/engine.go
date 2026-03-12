@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/your-org/shum/internal/hosts"
-	"github.com/your-org/shum/internal/projects"
+	"github.com/imurodl/shum/internal/hosts"
+	"github.com/imurodl/shum/internal/projects"
 )
 
 type Service struct {

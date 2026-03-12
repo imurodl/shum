@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/your-org/shum/internal/hosts"
-	"github.com/your-org/shum/internal/projects"
-	"github.com/your-org/shum/internal/store"
+	"github.com/imurodl/shum/internal/hosts"
+	"github.com/imurodl/shum/internal/projects"
+	"github.com/imurodl/shum/internal/store"
 )
 
 // newTestService creates a Service backed by an in-memory SQLite database
