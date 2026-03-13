@@ -1,4 +1,6 @@
 <script setup>
+import { onMounted } from 'vue'
+
 const navLinks = [
   { label: 'Why', href: '#why' },
   { label: 'Flow', href: '#flow' },
@@ -27,8 +29,8 @@ const failureModes = [
   },
   {
     index: 'A3',
-    title: 'Preflight checks are uneven and fragile.',
-    copy: 'Image deltas, health checks, and warnings get validated differently every time.',
+    title: 'Preflight checks are skipped or inconsistent.',
+    copy: 'There\'s no standard — image deltas, disk space, and health checks get eyeballed differently on every run.',
   },
   {
     index: 'A4',
@@ -41,33 +43,33 @@ const flowSteps = [
   {
     step: '01',
     title: 'Register the host you already trust',
-    copy: 'Start from a known SSH alias and keep that identity stable during live work.',
+    copy: 'Your SSH config is the source of truth. SHUM uses your existing aliases — no new credentials or config files needed.',
     command: 'shum host register prod\nshum project discover prod',
   },
   {
     step: '02',
     title: 'Inspect and preflight the Compose project',
-    copy: 'Read effective project state and validate readiness before a real change.',
+    copy: 'See the live compose config, running containers, and any readiness warnings before you change anything.',
     command:
       'shum project inspect prod web --project-directory /srv/web --json\nshum project preflight prod web --json',
   },
   {
     step: '03',
     title: 'Attach policy to the project itself',
-    copy: 'Store backup requirements and health probes with the project instead of operator memory.',
+    copy: 'Backup commands and health probes travel with the project — not in someone\'s head or a shared doc.',
     command:
       'shum project policy set prod web --require-backup=true \\\n  --backup-command "docker exec db pg_dumpall -U app > \\"$SHUM_BACKUP_ARTIFACT\\"" \\\n  --health-check "http://127.0.0.1:8080/health"',
   },
   {
     step: '04',
     title: 'Plan and dry-run before mutation',
-    copy: 'Compute the intended change and make preview output part of the normal path.',
+    copy: 'Preview exactly which images will change. Dry-run the full upgrade to confirm the plan before any container restarts.',
     command: 'shum project plan prod web --json\nshum project upgrade prod web --dry-run --json',
   },
   {
     step: '05',
     title: 'Execute and inspect the resulting run',
-    copy: 'The same CLI that performs the rollout also preserves summaries and artifacts afterward.',
+    copy: 'Run the upgrade. Every outcome — services changed, backup taken, health check result — is recorded and queryable afterward.',
     command: 'shum project upgrade prod web --json\nshum project run list --host prod --project web --json',
   },
 ]
@@ -108,7 +110,7 @@ shum project upgrade prod web --dry-run --json`,
   },
   {
     label: 'Run evidence',
-    title: 'Post-run facts',
+    title: 'What actually happened',
     copy: 'Review the actual result instead of hunting through old terminal buffers.',
     code: `shum project run show run_01JQ4KQ9DZH8 --json
 {
@@ -142,6 +144,33 @@ const resourceCards = [
     copy: 'Contribution standards and workflow expectations.',
   },
 ]
+
+const sectionRefs = []
+function registerSection(el) {
+  if (el) sectionRefs.push(el)
+}
+
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    },
+    { threshold: 0.08 }
+  )
+
+  sectionRefs.forEach((el, i) => {
+    if (i === 0) {
+      el.classList.add('visible')
+    } else {
+      observer.observe(el)
+    }
+  })
+})
 
 const installBlock = `go install github.com/imurodl/shum/cmd/shum@latest
 shum --help`
@@ -187,14 +216,18 @@ const statusBlock = `release_brief:
     </header>
 
     <main class="page">
-      <section class="hero" id="top">
+      <section class="hero" id="top" :ref="registerSection">
         <div class="hero-copy">
-          <p class="section-kicker">Field manual for Compose operators</p>
+          <p class="section-kicker">For developers who self-host on Linux</p>
+          <div class="hero-badge">
+            <span class="board-status">v0.1.0</span>
+            <span class="hero-badge-sep">·</span>
+            <span class="hero-badge-license">Apache 2.0</span>
+          </div>
           <p class="hero-index">01</p>
           <h1>Remote Docker Compose upgrades need procedure, not courage.</h1>
           <p class="hero-lead">
-            SHUM is a CLI for operators who want a readable path from inspection to review. It keeps upgrades
-            explicit, policy-gated, dry-runnable, recoverable, and auditable on normal self-hosted Linux hosts.
+            SHUM is a CLI for Docker Compose stacks on self-hosted servers. Register your server once, attach a backup policy to each project, and run upgrades with dry-runs, health checks, and a full audit trail — no platform required.
           </p>
 
           <div class="hero-actions">
@@ -204,7 +237,7 @@ const statusBlock = `release_brief:
               target="_blank"
               rel="noopener noreferrer"
             >
-              Read docs / quick start
+              Quick start
             </a>
             <a
               class="button button-secondary"
@@ -212,7 +245,7 @@ const statusBlock = `release_brief:
               target="_blank"
               rel="noopener noreferrer"
             >
-              View repository
+              View on GitHub
             </a>
           </div>
         </div>
@@ -239,24 +272,25 @@ const statusBlock = `release_brief:
             </article>
             <article>
               <span>Evidence retained</span>
-              <p>Run summaries and artifacts remain reviewable after the rollout.</p>
+              <p>Every run is logged. Summaries and backup artifacts stay queryable after the fact.</p>
             </article>
           </div>
         </aside>
       </section>
 
       <section class="ticker" aria-label="Capabilities">
-        <div class="ticker-track">
-          <span v-for="item in tickerItems" :key="item">{{ item }}</span>
+        <div class="ticker-track" aria-live="off">
+          <span v-for="item in tickerItems" :key="'a-' + item">{{ item }}</span>
+          <span v-for="item in tickerItems" :key="'b-' + item" aria-hidden="true">{{ item }}</span>
         </div>
       </section>
 
-      <section class="why" id="why">
+      <section class="why" id="why" :ref="registerSection">
         <div class="why-intro">
           <p class="section-kicker">Why this exists</p>
-          <h2>The dangerous part is usually the workflow around the upgrade.</h2>
+          <h2>The dangerous part is the workflow around the upgrade.</h2>
           <p>
-            Teams usually have SSH and Compose. What they lack is a repeatable release path when the consequences are real.
+            SSH and Compose get you to production. They don't get you back when something breaks.
           </p>
         </div>
 
@@ -269,17 +303,17 @@ const statusBlock = `release_brief:
         </div>
       </section>
 
-      <section class="flow" id="flow">
+      <section class="flow" id="flow" :ref="registerSection">
         <div class="flow-intro">
           <p class="section-kicker">Operating flow</p>
           <h2>Five moves from trust to audit.</h2>
           <p>
-            SHUM is not a platform. It adds order to the moments where Compose upgrades usually become improvised.
+            SHUM is not a platform. It adds order to the moments where Compose upgrades become improvised.
           </p>
         </div>
 
         <div class="steps">
-          <article v-for="item in flowSteps" :key="item.step" class="step-card">
+          <article v-for="(item, index) in flowSteps" :key="item.step" class="step-card" :class="{ 'step-card--last': index === flowSteps.length - 1 }">
             <div class="step-head">
               <span class="step-number">{{ item.step }}</span>
               <h3>{{ item.title }}</h3>
@@ -290,12 +324,12 @@ const statusBlock = `release_brief:
         </div>
       </section>
 
-      <section class="proof" id="proof">
+      <section class="proof" id="proof" :ref="registerSection">
         <div class="proof-summary">
           <p class="section-kicker">Operational proof</p>
-          <h2>Trust comes from changing how upgrades are executed.</h2>
+          <h2>Confidence comes from seeing the path before you take it.</h2>
           <p>
-            Preview before mutation, policy before execution, recovery before panic, and readable evidence after the run.
+            SHUM puts inspection, policy, and recovery into the normal workflow — not as afterthoughts you reach for when something breaks.
           </p>
         </div>
 
@@ -317,17 +351,16 @@ const statusBlock = `release_brief:
         </div>
       </section>
 
-      <section class="start" id="start">
+      <section class="start" id="start" :ref="registerSection">
         <div class="start-copy">
           <p class="section-kicker">Start here</p>
-          <h2>Install the CLI and test the flow against a real host.</h2>
+          <h2>Up and running in five minutes.</h2>
           <p>
-            If the upgrade path becomes clearer, SHUM is doing its job.
+            Point SHUM at a server you already SSH into. If the upgrade path feels clearer after the first run, it's doing its job.
           </p>
           <div class="start-meta">
             <p><strong>Config</strong> <code>~/.config/shum</code></p>
             <p><strong>State</strong> <code>~/.cache/shum</code></p>
-            <p><strong>Validation</strong> <code>go test ./...</code> and optional <code>go test ./test/e2e</code></p>
           </div>
         </div>
 
@@ -339,10 +372,10 @@ const statusBlock = `release_brief:
       </section>
     </main>
 
-    <footer class="footer">
+    <footer class="footer" :ref="registerSection">
       <div class="footer-intro">
         <p class="section-kicker">Resources</p>
-        <h2>Open-source tooling for teams that want explicit operations.</h2>
+        <h2>Open-source. Works with any Docker Compose stack on any Linux server.</h2>
       </div>
 
       <div class="resource-grid">

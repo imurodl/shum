@@ -100,10 +100,10 @@ pre code {
 }
 
 .shape-two {
-  inset: 22% -8% auto auto;
+  inset: 58% -8% auto auto;
   width: 22rem;
   height: 22rem;
-  background: radial-gradient(circle, rgba(45, 105, 199, 0.16), transparent 70%);
+  background: radial-gradient(circle, rgba(45, 105, 199, 0.07), transparent 70%);
 }
 
 .masthead,
@@ -219,14 +219,26 @@ pre code {
 .proof,
 .start,
 .footer {
-  animation: lift 0.55s ease both;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.hero.visible,
+.why.visible,
+.flow.visible,
+.proof.visible,
+.start.visible,
+.footer.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr);
   gap: 1.7rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .hero-copy,
@@ -295,6 +307,26 @@ pre code {
   text-transform: uppercase;
 }
 
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.hero-badge-sep {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.hero-badge-license {
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .hero-lead,
 .why-intro p:last-child,
 .flow-intro p:last-child,
@@ -357,7 +389,6 @@ pre code {
   gap: 1.25rem;
   padding: 1.6rem;
   box-shadow: 0 0 0 2px rgba(23, 18, 15, 0.04), var(--shadow-soft);
-  transform: translateY(0.45rem);
 }
 
 .board-header {
@@ -420,19 +451,27 @@ pre code {
 }
 
 .ticker {
-  display: flex;
-  justify-content: center;
+  overflow: hidden;
   padding: 0.25rem 0;
   margin-top: 1.2rem;
 }
 
 .ticker-track {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
   gap: 0.7rem;
-  max-width: 58rem;
+  width: max-content;
   padding: 0.25rem 0;
+  animation: ticker-scroll 28s linear infinite;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .ticker-track span {
@@ -458,6 +497,14 @@ pre code {
 .proof,
 .start {
   padding: 2.1rem;
+}
+
+#top,
+#why,
+#flow,
+#proof,
+#start {
+  scroll-margin-top: 6rem;
 }
 
 .why,
@@ -575,11 +622,16 @@ pre code {
   gap: 1.35rem;
 }
 
+.step-card--last {
+  grid-column: 1 / -1;
+}
+
 .step-card {
   display: grid;
   gap: 1.05rem;
   padding: 1.25rem;
   box-shadow: var(--shadow-soft);
+  border-left: 3px solid var(--accent);
 }
 
 .step-head {
