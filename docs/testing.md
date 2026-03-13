@@ -17,6 +17,8 @@ go test ./test/e2e
 
 ## Quick CLI checks (requires a registered host)
 
+Replace `your-alias` and `web` with your registered host alias and project name.
+
 ```bash
 shum host register your-alias
 shum project discover your-alias

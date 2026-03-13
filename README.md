@@ -4,42 +4,58 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/imurodl/shum)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
-**Website:** https://imurodl.me/shum/  
-**Repository:** https://github.com/imurodl/shum  
+**Website:** https://imurodl.me/shum/
+**Repository:** https://github.com/imurodl/shum
 **License:** Apache-2.0
 
-`shum` is an operations CLI that makes remote Docker Compose upgrades explicit, policy-gated, and recoverable.
+`shum` is a CLI tool for safe Docker Compose upgrades on self-hosted servers. Back up first, dry-run before applying, and keep a full audit trail — without wrapping your stack in a platform.
 
 ## What it solves
 
-- Remote upgrades are often risky and inconsistently documented.
-- Teams lack a canonical flow from discovery to rollback.
-- Backup and verification are frequently informal or forgotten.
-- Run history is hard to audit under pressure.
+SSH and Compose get you to production. They don't give you a repeatable path back when something breaks.
 
-`shum` gives you a single command surface to solve these problems without wrapping your stack in extra abstraction.
+- Upgrades happen from shell history, not a documented flow.
+- Backups are optional until the rollout is already failing.
+- There's no standard preflight — readiness gets eyeballed every time.
+- After a bad run, reconstructing what changed is guesswork.
 
-## Core guarantees
+## What it gives you
 
-- **Trust-first host model**: register once, then target stable SSH aliases.
-- **Deterministic upgrade flow**: discover → preflight → plan → policy → execute.
-- **Policy gates**: mandatory backup and migration warning controls.
-- **Recovery**: persisted backup artifacts and restore pathways.
-- **Auditability**: structured run history with status transitions and summaries.
+- **Register once, target always** — SSH aliases are the identity. No extra credentials or config files.
+- **See before you change** — inspect, preflight, and dry-run are part of the normal path, not optional steps.
+- **Policy travels with the project** — backup commands and health checks are stored per-project, not per-operator.
+- **Recovery is built in** — backup artifacts are created and stored before every upgrade that requires them.
+- **Every run leaves a record** — status, changed services, and health outcomes are queryable after the fact.
 
-## Architecture
+## Command surface
 
-- `host`: register/list/inspect remote hosts and identity metadata.
-- `project discover`: remote compose project discovery.
-- `project inspect`: analyze compose risk surfaces and effective configuration.
-- `project preflight`: verify readiness signals before mutation.
-- `project plan`: compute planned image/config changes before execution.
-- `project policy`: store per-project safety controls.
-- `project backup`: create/list/restore backup artifacts.
-- `project upgrade`: dry-run then execute upgrades with optional probes.
-- `project run`: inspect run history and details.
+**Host management**
+- `shum host register <alias>` — register an SSH alias and verify connectivity
+- `shum host list` / `shum host inspect <alias>` — list and inspect registered hosts
+
+**Project discovery and inspection**
+- `shum project discover <alias>` — find running Compose projects on the host
+- `shum project inspect <alias> <project>` — read effective config and risk surfaces
+- `shum project preflight <alias> <project>` — check Docker, Compose, disk, and project readiness
+
+**Planning**
+- `shum project plan <alias> <project>` — preview image and config changes before execution
+
+**Policy**
+- `shum project policy set/show <alias> <project>` — store backup requirements and health probes with the project
+
+**Backup**
+- `shum project backup take/list/restore <alias> <project>` — create and manage backup artifacts
+
+**Upgrade**
+- `shum project upgrade <alias> <project>` — run the upgrade with optional dry-run and health probes
+
+**History**
+- `shum project run list/show` — inspect upgrade run history and outcomes
 
 ## Install
+
+Requires Go 1.22 or later.
 
 ```bash
 go install github.com/imurodl/shum/cmd/shum@latest
@@ -111,10 +127,7 @@ Remote integration tests are optional and skip automatically if SSH context is u
 - [Security](./SECURITY.md)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 
-## Support and roadmap
-
-- Open issues in the repository for requests and reproducible bugs.
-- Track upcoming improvements through commits and changelog entries.
+Open an issue for bugs or feature requests.
 
 ## License
 
