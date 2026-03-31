@@ -4,7 +4,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/imurodl/shum)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
-**Website:** https://imurodl.me/shum/
+**Website:** https://shum.imurodl.me/
 **Repository:** https://github.com/imurodl/shum
 **License:** Apache-2.0
 
@@ -122,7 +122,7 @@ Remote integration tests are optional and skip automatically if SSH context is u
 ## Docs
 
 - [Testing Guide](./docs/testing.md)
-- [Project Site](https://imurodl.me/shum/)
+- [Project Site](https://shum.imurodl.me/)
 - [Contributing Guide](./CONTRIBUTING.md)
 - [Security](./SECURITY.md)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
