@@ -8,26 +8,66 @@
 **Repository:** https://github.com/imurodl/shum
 **License:** Apache-2.0
 
-`shum` is a CLI tool for safe Docker Compose upgrades on self-hosted servers. Back up first, dry-run before applying, and keep a full audit trail — without wrapping your stack in a platform.
+## What it is
 
-## What it solves
+`shum` is a CLI for safe, recoverable Docker Compose upgrades on remote SSH hosts. It is built to be driven by AI coding agents — every command speaks `--json`, errors return stable codes with documented exit codes, and the entire surface is discoverable in one shot via `shum agent-help`. Humans drive it just as well from the terminal.
 
-SSH and Compose get you to production. They don't give you a repeatable path back when something breaks.
+## Install
 
-- Upgrades happen from shell history, not a documented flow.
-- Backups are optional until the rollout is already failing.
-- There's no standard preflight — readiness gets eyeballed every time.
-- After a bad run, reconstructing what changed is guesswork.
+Requires Go 1.22 or later.
 
-## What it gives you
+```bash
+go install github.com/imurodl/shum/cmd/shum@latest
+```
 
-- **Register once, target always** — SSH aliases are the identity. No extra credentials or config files.
-- **See before you change** — inspect, preflight, and dry-run are part of the normal path, not optional steps.
-- **Policy travels with the project** — backup commands and health checks are stored per-project, not per-operator.
-- **Recovery is built in** — backup artifacts are created and stored before every upgrade that requires them.
-- **Every run leaves a record** — status, changed services, and health outcomes are queryable after the fact.
+Source build:
+
+```bash
+git clone https://github.com/imurodl/shum.git
+cd shum
+go install ./cmd/shum
+```
+
+## Quickstart for AI agents
+
+Designed for Claude Code, OpenAI Codex CLI, Gemini CLI, and similar tools.
+
+```bash
+# 1. Load the full surface once into context.
+shum agent-help | jq .
+
+# 2. Discover what to operate on.
+shum host list --json
+shum project discover prod --json
+
+# 3. Plan before acting.
+shum project plan prod web --json
+
+# 4. Dry-run, then real run. Parse .error.code on stderr if either fails.
+shum project upgrade prod web --dry-run --json
+shum project upgrade prod web --json
+```
+
+The full agent contract — error codes, exit codes, and failure-handling rules — lives in [AGENTS.md](./AGENTS.md). Ready-to-use harness configs:
+
+- [`examples/agents/claude-code/`](./examples/agents/claude-code/) — Claude Code skill + slash command
+- [`examples/agents/codex/`](./examples/agents/codex/) — OpenAI Codex CLI
+- [`examples/agents/gemini/`](./examples/agents/gemini/) — Gemini CLI
+
+## Quickstart for humans
+
+```bash
+shum host register prod
+shum project discover prod
+shum project inspect prod web --project-directory /srv/web
+shum project preflight prod web
+shum project plan prod web
+```
 
 ## Command surface
+
+**Discoverability**
+- `shum agent-help` — emit the full CLI surface as JSON (commands, flags, error codes, output shapes)
 
 **Host management**
 - `shum host register <alias>` — register an SSH alias and verify connectivity
@@ -52,32 +92,6 @@ SSH and Compose get you to production. They don't give you a repeatable path bac
 
 **History**
 - `shum project run list/show` — inspect upgrade run history and outcomes
-
-## Install
-
-Requires Go 1.22 or later.
-
-```bash
-go install github.com/imurodl/shum/cmd/shum@latest
-```
-
-Source build:
-
-```bash
-git clone https://github.com/imurodl/shum.git
-cd shum
-go install ./cmd/shum
-```
-
-## Quick start
-
-```bash
-shum host register prod
-shum project discover prod
-shum project inspect prod web --project-directory /srv/web --json
-shum project preflight prod web
-shum project plan prod web --json
-```
 
 ## Standard flow
 
@@ -121,6 +135,7 @@ Remote integration tests are optional and skip automatically if SSH context is u
 
 ## Docs
 
+- [Agent Contract (AGENTS.md)](./AGENTS.md)
 - [Testing Guide](./docs/testing.md)
 - [Project Site](https://shum.imurodl.me/)
 - [Contributing Guide](./CONTRIBUTING.md)
