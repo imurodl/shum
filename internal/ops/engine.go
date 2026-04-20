@@ -15,6 +15,7 @@ import (
 
 	"github.com/imurodl/shum/internal/hosts"
 	"github.com/imurodl/shum/internal/projects"
+	"github.com/imurodl/shum/internal/shumerr"
 )
 
 type Service struct {
@@ -80,7 +81,7 @@ func (s *Service) Plan(ctx context.Context, hostAlias, projectRef string, policy
 
 func (s *Service) SetPolicy(ctx context.Context, p ProjectPolicy) error {
 	if p.ProjectRef == "" || p.HostAlias == "" {
-		return fmt.Errorf("host alias and project ref required")
+		return shumerr.New(shumerr.CodeUsage, "host alias and project ref required")
 	}
 	return s.opsRepo.UpsertPolicy(ctx, p)
 }
@@ -111,7 +112,9 @@ func (s *Service) TakeBackup(ctx context.Context, hostAlias, projectRef string, 
 		cmd = strings.TrimSpace(policy.BackupCommand)
 	}
 	if cmd == "" {
-		return BackupResult{}, fmt.Errorf("no backup command configured")
+		return BackupResult{}, shumerr.New(shumerr.CodeBackupRequired, "no backup command configured").
+			WithHint("set one with `shum project policy set --backup-command \"...\"`").
+			WithDetails(map[string]any{"host_alias": hostAlias, "project_ref": projectRef})
 	}
 
 	// Start with an empty artifact so restore commands that write to path are supported.
@@ -122,7 +125,8 @@ func (s *Service) TakeBackup(ctx context.Context, hostAlias, projectRef string, 
 	enriched := fmt.Sprintf("SHUM_BACKUP_ARTIFACT=%s %s", shellEscape(artifactPath), cmd)
 	out, err := s.runner.Command(hostAlias, enriched)
 	if err != nil {
-		return BackupResult{}, fmt.Errorf("backup command failed: %w: %s", err, out)
+		return BackupResult{}, shumerr.Wrap(shumerr.CodeBackupFailed, err, fmt.Sprintf("backup command failed: %s", out)).
+			WithDetails(map[string]any{"host_alias": hostAlias, "project_ref": projectRef, "command": cmd})
 	}
 
 	if output := strings.TrimSpace(out); output != "" {
@@ -162,15 +166,19 @@ func (s *Service) RestoreBackup(ctx context.Context, hostAlias, projectRef strin
 		command = p.RestoreCommand
 	}
 	if strings.TrimSpace(command) == "" {
-		return fmt.Errorf("no restore command configured")
+		return shumerr.New(shumerr.CodeBackupRequired, "no restore command configured").
+			WithHint("set one with `shum project policy set --restore-command \"...\"`").
+			WithDetails(map[string]any{"host_alias": hostAlias, "project_ref": projectRef})
 	}
 
 	if _, err := os.Stat(artifactPath); err != nil {
-		return fmt.Errorf("artifact not found: %w", err)
+		return shumerr.Wrap(shumerr.CodeArtifactNotFound, err, fmt.Sprintf("artifact not found: %s", artifactPath)).
+			WithDetails(map[string]any{"artifact_path": artifactPath})
 	}
 	enriched := fmt.Sprintf("SHUM_BACKUP_ARTIFACT=%s %s", shellEscape(artifactPath), command)
 	if _, err := s.runner.Command(hostAlias, enriched); err != nil {
-		return fmt.Errorf("restore command failed: %w", err)
+		return shumerr.Wrap(shumerr.CodeRestoreFailed, err, "restore command failed").
+			WithDetails(map[string]any{"host_alias": hostAlias, "project_ref": projectRef, "artifact_path": artifactPath})
 	}
 	return nil
 }
@@ -186,7 +194,9 @@ func (s *Service) RunUpgrade(ctx context.Context, hostAlias, projectRef string, 
 		return UpgradeResult{}, err
 	}
 	if !opts.Force && policy.MigrationWarning {
-		return UpgradeResult{}, fmt.Errorf("migration warning is enabled; use --force to continue")
+		return UpgradeResult{}, shumerr.New(shumerr.CodeMigrationWarning, "migration warning is enabled; use --force to continue").
+			WithHint("review the plan, then re-run with --force if the upgrade is intentional").
+			WithDetails(map[string]any{"host_alias": hostAlias, "project_ref": projectRef})
 	}
 
 	plan, err := s.Plan(ctx, hostAlias, projectRef, &policy)
@@ -234,7 +244,9 @@ func (s *Service) RunUpgrade(ctx context.Context, hostAlias, projectRef string, 
 		_ = repo.UpdateRun(ctx, runID, RunStatusFailed, blockReason, blockReason, "", true)
 		_ = repo.AddRunEvent(ctx, runID, "block", blockReason)
 		_ = tx.Commit()
-		return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: blockReason}, fmt.Errorf(blockReason)
+		return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: blockReason},
+			shumerr.New(shumerr.CodePreflightBlocked, blockReason).
+				WithDetails(map[string]any{"run_id": runID, "blocks": plan.Blocks})
 	}
 
 	if opts.DryRun {
@@ -295,7 +307,10 @@ func (s *Service) rollbackTx(
 		_ = repo.UpdateRun(ctx, runID, RunStatusFailed, "", statusReason, artifactPath, true)
 		_ = repo.AddRunEvent(ctx, runID, "rollback-failure", statusReason)
 		_ = tx.Commit()
-		return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: statusReason}, rollbackErr
+		return UpgradeResult{RunID: runID, Status: string(RunStatusFailed), Summary: statusReason},
+			shumerr.Wrap(shumerr.CodeRollbackFailed, rollbackErr, statusReason).
+				WithHint("manual intervention required on the host; check the failed run with `shum project run show`").
+				WithDetails(map[string]any{"run_id": runID, "host_alias": hostAlias, "project_ref": projectRef})
 	}
 	_ = repo.UpdateRun(ctx, runID, RunStatusRolledBack, "upgrade rolled back", reason, artifactPath, true)
 	_ = repo.AddRunEvent(ctx, runID, "rollback", "upgrade rolled back")

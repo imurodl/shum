@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/imurodl/shum/internal/shumerr"
 	"github.com/imurodl/shum/internal/store"
 )
 
@@ -141,7 +142,9 @@ func (r *Repository) Get(ctx context.Context, alias string) (Host, error) {
 		&verifiedRaw,
 	)
 	if err == sql.ErrNoRows {
-		return Host{}, fmt.Errorf("host not found: %s", alias)
+		return Host{}, shumerr.Newf(shumerr.CodeHostNotFound, "host not found: %s", alias).
+			WithHint("register it with `shum host register " + alias + "`").
+			WithDetails(map[string]any{"alias": alias})
 	}
 	if err != nil {
 		return Host{}, err

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -159,11 +158,3 @@ func newHostService() (*hosts.Service, error) {
 	return hosts.NewService(repo, runner), nil
 }
 
-func encodeJSON(cmd *cobra.Command, payload any) error {
-	raw, err := json.MarshalIndent(payload, "", "  ")
-	if err != nil {
-		return err
-	}
-	_, err = cmd.OutOrStdout().Write(append(raw, '\n'))
-	return err
-}

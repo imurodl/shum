@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/imurodl/shum/internal/shumerr"
 )
 
 type Runner struct {
@@ -28,9 +30,12 @@ func (r *Runner) Command(alias string, command string) (string, error) {
 		output := strings.TrimSpace(string(out))
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) && exitErr.ExitCode() == 255 {
-			return "", fmt.Errorf("ssh connection to %q failed: %s", alias, output)
+			return "", shumerr.Newf(shumerr.CodeHostUnreachable, "ssh connection to %q failed: %s", alias, output).
+				WithHint("verify the host is up, the SSH alias resolves, and the key is trusted").
+				WithDetails(map[string]any{"alias": alias, "ssh_output": output})
 		}
-		return "", fmt.Errorf("remote command on %q failed: %w: %s", alias, err, output)
+		return "", shumerr.Wrap(shumerr.CodeInternal, err, fmt.Sprintf("remote command on %q failed: %s", alias, output)).
+			WithDetails(map[string]any{"alias": alias, "ssh_output": output})
 	}
 	return strings.TrimSpace(string(out)), nil
 }

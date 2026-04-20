@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/imurodl/shum/internal/shumerr"
 	"github.com/imurodl/shum/internal/store"
 )
 
@@ -151,7 +152,9 @@ func (r *ProjectRepository) GetProject(ctx context.Context, hostAlias, ref strin
 		&updatedRaw,
 	)
 	if err == sql.ErrNoRows {
-		return ProjectRecord{}, fmt.Errorf("project not found")
+		return ProjectRecord{}, shumerr.New(shumerr.CodeProjectNotFound, "project not found").
+			WithHint("run `shum project discover <alias>` to populate the project list").
+			WithDetails(map[string]any{"host_alias": hostAlias, "project_ref": ref})
 	}
 	if err != nil {
 		return ProjectRecord{}, err
