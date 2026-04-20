@@ -1,132 +1,156 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const navLinks = [
-  { label: 'Why', href: '#why' },
+  { label: 'Agents', href: '#agents' },
+  { label: 'Harness', href: '#harness' },
   { label: 'Flow', href: '#flow' },
-  { label: 'Proof', href: '#proof' },
   { label: 'Start', href: '#start' },
 ]
 
-const tickerItems = [
-  'trusted SSH aliases',
-  'compose-aware inspection',
-  'dry-run before mutation',
-  'backup policy gates',
-  'artifact and run history',
+const agentPillars = [
+  {
+    title: 'Every command speaks --json',
+    copy: 'Read commands, plans, and runs all return parseable JSON. Agents never scrape human text.',
+    lang: 'json',
+    code: `{
+  "host_alias": "prod",
+  "project_ref": "web",
+  "preflight": { "passed": true, "docker_version": "26.1.4" },
+  "services": [
+    {
+      "service": "api",
+      "current_digest": "sha256:9a1...",
+      "target_digest": "sha256:b2f..."
+    }
+  ],
+  "warnings": [],
+  "blocks": []
+}`,
+  },
+  {
+    title: 'Errors carry stable codes',
+    copy: 'On failure shum writes a typed envelope to stderr and exits with a documented code. Codes are part of the public surface — never renamed in a patch release.',
+    lang: 'json',
+    code: `{
+  "error": {
+    "code": "migration_warning",
+    "message": "migration warning is enabled; use --force to continue",
+    "hint": "review the plan, then re-run with --force if intentional",
+    "details": { "host_alias": "prod", "project_ref": "web" }
+  }
+}`,
+  },
+  {
+    title: 'Surface loads in one shot',
+    copy: '`shum agent-help` emits the entire CLI surface — every command, flag, error code, and JSON shape — as a single JSON document. One call at session start.',
+    lang: 'bash',
+    code: `$ shum agent-help | jq '{
+    commands: (.commands | length),
+    errors: (.errors | length)
+  }'
+{
+  "commands": 16,
+  "errors": 22
+}`,
+  },
 ]
 
-const failureModes = [
+const harnessCards = [
   {
-    index: 'A1',
-    title: 'Deployment knowledge drifts between operators.',
-    copy: 'The real plan often lives in shell history, notes, and one engineer’s memory.',
+    name: 'Claude Code',
+    tag: 'Skill + slash command',
+    href: 'https://github.com/imurodl/shum/tree/main/examples/agents/claude-code',
+    blurb: 'Trigger by natural language ("upgrade web on prod") or by /shum-upgrade. Includes the canonical safe-upgrade flow and hard failure-handling rules.',
+    install: 'cp -r .claude/skills/shum ~/.claude/skills/',
   },
   {
-    index: 'A2',
-    title: 'Rollback preparation starts after the damage.',
-    copy: 'Backups and restore commands stay optional until the rollout is already unstable.',
+    name: 'OpenAI Codex',
+    tag: 'AGENTS.md drop-in',
+    href: 'https://github.com/imurodl/shum/tree/main/examples/agents/codex',
+    blurb: 'Codex reads AGENTS.md hierarchically. Drop the file in your repo or merge the rules into your existing one.',
+    install: 'cp AGENTS.md ./AGENTS.md',
   },
   {
-    index: 'A3',
-    title: 'Preflight checks are skipped or inconsistent.',
-    copy: 'There\'s no standard — image deltas, disk space, and health checks get eyeballed differently on every run.',
-  },
-  {
-    index: 'A4',
-    title: 'After the run, evidence is incomplete.',
-    copy: 'Teams struggle to reconstruct what changed, what was protected, and what actually passed.',
+    name: 'Gemini CLI',
+    tag: 'GEMINI.md drop-in',
+    href: 'https://github.com/imurodl/shum/tree/main/examples/agents/gemini',
+    blurb: 'Gemini CLI loads GEMINI.md hierarchically and supports @file imports. Reference shum\'s rules from your existing GEMINI.md.',
+    install: 'cp GEMINI.md ~/.gemini/GEMINI.md',
   },
 ]
 
 const flowSteps = [
   {
     step: '01',
-    title: 'Register the host you already trust',
-    copy: 'Your SSH config is the source of truth. SHUM uses your existing aliases — no new credentials or config files needed.',
-    command: 'shum host register prod\nshum project discover prod',
+    title: 'Load the surface',
+    copy: 'Once per session. Every command, every flag, every error code, every output shape — one JSON document.',
+    command: 'shum agent-help | jq .',
+    lang: 'bash',
   },
   {
     step: '02',
-    title: 'Inspect and preflight the Compose project',
-    copy: 'See the live compose config, running containers, and any readiness warnings before you change anything.',
-    command:
-      'shum project inspect prod web --project-directory /srv/web --json\nshum project preflight prod web --json',
+    title: 'Discover hosts and projects',
+    copy: 'SSH aliases are the identity. Discover compose projects already running on a host.',
+    command: 'shum host list --json\nshum project discover prod --json',
+    lang: 'bash',
   },
   {
     step: '03',
-    title: 'Attach policy to the project itself',
-    copy: 'Backup commands and health probes travel with the project — not in someone\'s head or a shared doc.',
-    command:
-      'shum project policy set prod web --require-backup=true \\\n  --backup-command "docker exec db pg_dumpall -U app > \\"$SHUM_BACKUP_ARTIFACT\\"" \\\n  --health-check "http://127.0.0.1:8080/health"',
+    title: 'Read the policy',
+    copy: 'Backup commands, restore commands, and health checks travel with the project — not with the operator.',
+    command: 'shum project policy show prod web --json',
+    lang: 'bash',
   },
   {
     step: '04',
-    title: 'Plan and dry-run before mutation',
-    copy: 'Preview exactly which images will change. Dry-run the full upgrade to confirm the plan before any container restarts.',
+    title: 'Plan, then dry-run',
+    copy: 'Preview which images will change and run the full upgrade flow without mutating anything.',
     command: 'shum project plan prod web --json\nshum project upgrade prod web --dry-run --json',
+    lang: 'bash',
   },
   {
     step: '05',
-    title: 'Execute and inspect the resulting run',
-    copy: 'Run the upgrade. Every outcome — services changed, backup taken, health check result — is recorded and queryable afterward.',
-    command: 'shum project upgrade prod web --json\nshum project run list --host prod --project web --json',
+    title: 'Execute, then audit',
+    copy: 'Real upgrade. One JSON record per run: status, services changed, backup taken, health probe outcomes.',
+    command: 'shum project upgrade prod web --json\nshum project run show <run-id> --json',
+    lang: 'bash',
   },
 ]
 
-const proofCards = [
-  {
-    label: 'Preview',
-    title: 'You do not learn the blast radius at execution time.',
-    copy: 'Inspection, planning, and dry-runs make the path readable before the host changes.',
-  },
-  {
-    label: 'Policy',
-    title: 'Safety controls stop being optional.',
-    copy: 'Backup requirements and health checks become project rules instead of team habits.',
-  },
-  {
-    label: 'Recovery',
-    title: 'Artifacts stay close to the upgrade workflow.',
-    copy: 'Recovery paths stay near the run instead of being reconstructed after something breaks.',
-  },
-  {
-    label: 'Audit',
-    title: 'A rollout leaves evidence behind.',
-    copy: 'Operators can inspect status, changed services, and health outcomes after the run.',
-  },
-]
-
-const evidencePanels = [
-  {
-    label: 'Field test',
-    title: 'Fast path to evaluation',
-    copy: 'Judge SHUM by running the workflow against a real host and seeing whether the path gets clearer.',
-    code: `shum host register prod
-shum project discover prod
-shum project inspect prod web --project-directory /srv/web --json
-shum project preflight prod web --json
-shum project upgrade prod web --dry-run --json`,
-  },
-  {
-    label: 'Run evidence',
-    title: 'What actually happened',
-    copy: 'Review the actual result instead of hunting through old terminal buffers.',
-    code: `shum project run show run_01JQ4KQ9DZH8 --json
+const proofSession = `$ shum project upgrade prod web --json
 {
-  "status": "completed",
-  "changed_services": 3,
-  "artifact_count": 1,
-  "health_check": "passed"
-}`,
-  },
-]
+  "run_id": "run-1714834290291",
+  "status": "rolled_back",
+  "summary": "compose pull failed: connection reset"
+}
+$ echo $?
+68
+
+$ shum project upgrade prod web --dry-run --json 2>/dev/null | \\
+    jq '{services: .services | length, blocks, warnings}'
+{
+  "services": 3,
+  "blocks": [],
+  "warnings": []
+}`
+
+const installBlock = `go install github.com/imurodl/shum/cmd/shum@latest
+shum agent-help`
+
+const sourceInstallBlock = `git clone https://github.com/imurodl/shum.git
+cd shum
+go install ./cmd/shum`
+
+const skillInstallBlock = `# Drop the Claude Code skill into ~/.claude/
+cp -r examples/agents/claude-code/.claude/skills/shum \\
+  ~/.claude/skills/`
 
 const resourceCards = [
   {
-    title: 'Quick start',
-    href: 'https://github.com/imurodl/shum#quick-start',
-    copy: 'Install SHUM and walk through the standard operator flow.',
+    title: 'Agent contract',
+    href: 'https://github.com/imurodl/shum/blob/main/AGENTS.md',
+    copy: 'Full agent contract: command surface, error codes, exit codes, failure-handling rules.',
   },
   {
     title: 'Repository',
@@ -134,9 +158,9 @@ const resourceCards = [
     copy: 'Source, issues, releases, and implementation detail.',
   },
   {
-    title: 'Testing guide',
-    href: 'https://github.com/imurodl/shum/blob/main/docs/testing.md',
-    copy: 'Coverage strategy, integration checks, and optional remote tests.',
+    title: 'Quickstart',
+    href: 'https://github.com/imurodl/shum#quickstart-for-ai-agents',
+    copy: 'Five-step quickstart for AI agents and humans alike.',
   },
   {
     title: 'Contributing',
@@ -150,7 +174,23 @@ function registerSection(el) {
   if (el) sectionRefs.push(el)
 }
 
-onMounted(() => {
+const highlighter = ref(null)
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function renderCode(code, lang = 'bash') {
+  if (highlighter.value) {
+    return highlighter.value.codeToHtml(code, {
+      lang,
+      theme: 'github-dark-default',
+    })
+  }
+  return `<pre><code>${escapeHtml(code)}</code></pre>`
+}
+
+onMounted(async () => {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -162,7 +202,6 @@ onMounted(() => {
     },
     { threshold: 0.08 }
   )
-
   sectionRefs.forEach((el, i) => {
     if (i === 0) {
       el.classList.add('visible')
@@ -170,22 +209,27 @@ onMounted(() => {
       observer.observe(el)
     }
   })
+
+  // Explicit imports keep the bundle small: only 3 langs + 1 theme + JS regex engine.
+  const [
+    { createHighlighterCore, createJavaScriptRegexEngine },
+    json,
+    bash,
+    yaml,
+    githubDarkDefault,
+  ] = await Promise.all([
+    import('shiki/core'),
+    import('shiki/langs/json.mjs').then((m) => m.default),
+    import('shiki/langs/bash.mjs').then((m) => m.default),
+    import('shiki/langs/yaml.mjs').then((m) => m.default),
+    import('shiki/themes/github-dark-default.mjs').then((m) => m.default),
+  ])
+  highlighter.value = await createHighlighterCore({
+    themes: [githubDarkDefault],
+    langs: [json, bash, yaml],
+    engine: createJavaScriptRegexEngine(),
+  })
 })
-
-const installBlock = `go install github.com/imurodl/shum/cmd/shum@latest
-shum --help`
-
-const sourceInstallBlock = `git clone https://github.com/imurodl/shum.git
-cd shum
-go install ./cmd/shum`
-
-const statusBlock = `release_brief:
-  host: prod
-  project: web
-  mode: dry-run
-  backup_required: true
-  planned_service_changes: 3
-  health_probe: ready`
 </script>
 
 <template>
@@ -198,7 +242,7 @@ const statusBlock = `release_brief:
     <header class="masthead">
       <a class="brand" href="#top">
         <span class="brand-stamp">SHUM</span>
-        <span class="brand-copy">Self-Host Upgrade Manager</span>
+        <span class="brand-copy">agent-driveable Compose CLI</span>
       </a>
 
       <nav class="nav" aria-label="Primary">
@@ -207,37 +251,36 @@ const statusBlock = `release_brief:
 
       <a
         class="masthead-link"
-        href="https://github.com/imurodl/shum#quick-start"
+        href="https://github.com/imurodl/shum"
         target="_blank"
         rel="noopener noreferrer"
       >
-        Open quick start
+        View on GitHub
       </a>
     </header>
 
     <main class="page">
       <section class="hero" id="top" :ref="registerSection">
         <div class="hero-copy">
-          <p class="section-kicker">For developers who self-host on Linux</p>
+          <p class="section-kicker">For AI coding agents and the humans who run them</p>
           <div class="hero-badge">
             <span class="board-status">v0.1.0</span>
             <span class="hero-badge-sep">·</span>
             <span class="hero-badge-license">Apache 2.0</span>
           </div>
-          <p class="hero-index">01</p>
-          <h1>Remote Docker Compose upgrades need procedure, not courage.</h1>
+          <h1>The Compose upgrade CLI your AI agent can drive.</h1>
           <p class="hero-lead">
-            SHUM is a CLI for Docker Compose stacks on self-hosted servers. Register your server once, attach a backup policy to each project, and run upgrades with dry-runs, health checks, and a full audit trail — no platform required.
+            shum is a CLI for safe, recoverable Docker Compose upgrades on remote SSH hosts. Every command speaks <code>--json</code>, errors return stable codes, and the entire surface loads in one shot via <code>shum agent-help</code>. Use it from Claude Code, Codex, Gemini CLI, or your terminal.
           </p>
 
           <div class="hero-actions">
             <a
               class="button button-primary"
-              href="https://github.com/imurodl/shum#quick-start"
+              href="https://github.com/imurodl/shum/blob/main/AGENTS.md"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Quick start
+              Read the agent contract
             </a>
             <a
               class="button button-secondary"
@@ -253,110 +296,123 @@ const statusBlock = `release_brief:
         <aside class="hero-board">
           <div class="board-header">
             <div>
-              <p class="section-kicker">Release brief</p>
-              <h2>Prod / web</h2>
+              <p class="section-kicker">Error envelope</p>
+              <h2>stable, parseable</h2>
             </div>
-            <span class="board-status">safe path loaded</span>
+            <span class="board-status">stderr · exit 68</span>
           </div>
 
-          <pre><code>{{ statusBlock }}</code></pre>
+          <div class="code" v-html="renderCode(agentPillars[1].code, 'json')" />
 
           <div class="board-notes">
             <article>
-              <span>Known target</span>
-              <p>Trusted SSH alias remains the operator entrypoint.</p>
+              <span>code</span>
+              <p>Stable across patch releases. Parse <code>.error.code</code>, never the message.</p>
             </article>
             <article>
-              <span>Policy active</span>
-              <p>Backup and health constraints are attached before execution.</p>
+              <span>hint</span>
+              <p>Operator guidance the agent can surface verbatim to the user.</p>
             </article>
             <article>
-              <span>Evidence retained</span>
-              <p>Every run is logged. Summaries and backup artifacts stay queryable after the fact.</p>
+              <span>details</span>
+              <p>Structured context: which alias, which project, which artifact.</p>
             </article>
           </div>
         </aside>
       </section>
 
-      <section class="ticker" aria-label="Capabilities">
-        <div class="ticker-track" aria-live="off">
-          <span v-for="item in tickerItems" :key="'a-' + item">{{ item }}</span>
-          <span v-for="item in tickerItems" :key="'b-' + item" aria-hidden="true">{{ item }}</span>
-        </div>
-      </section>
-
-      <section class="why" id="why" :ref="registerSection">
-        <div class="why-intro">
-          <p class="section-kicker">Why this exists</p>
-          <h2>The dangerous part is the workflow around the upgrade.</h2>
+      <section class="agents" id="agents" :ref="registerSection">
+        <div class="agents-intro">
+          <p class="section-kicker">Designed for agents</p>
+          <h2>Three contracts. One CLI.</h2>
           <p>
-            SSH and Compose get you to production. They don't get you back when something breaks.
+            LLMs already know SSH and Docker from training. shum gives them a typed surface on top — so the agent makes the right call, not a clever guess.
           </p>
         </div>
 
-        <div class="failure-grid">
-          <article v-for="item in failureModes" :key="item.index" class="failure-card">
-            <p class="failure-index">{{ item.index }}</p>
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.copy }}</p>
+        <div class="pillars">
+          <article v-for="pillar in agentPillars" :key="pillar.title" class="pillar-card">
+            <h3>{{ pillar.title }}</h3>
+            <p>{{ pillar.copy }}</p>
+            <div class="code" v-html="renderCode(pillar.code, pillar.lang)" />
           </article>
+        </div>
+      </section>
+
+      <section class="harness" id="harness" :ref="registerSection">
+        <div class="harness-intro">
+          <p class="section-kicker">Works with your agent</p>
+          <h2>Ready-to-use configs for the major harnesses.</h2>
+          <p>
+            Each example is a small drop-in: an instructions file, a sample prompt, and a README. Use them as-is or merge the rules into your existing setup.
+          </p>
+        </div>
+
+        <div class="harness-grid">
+          <a
+            v-for="card in harnessCards"
+            :key="card.name"
+            class="harness-card"
+            :href="card.href"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div class="harness-head">
+              <h3>{{ card.name }}</h3>
+              <p class="harness-tag">{{ card.tag }}</p>
+            </div>
+            <p>{{ card.blurb }}</p>
+            <code class="harness-install">{{ card.install }}</code>
+          </a>
         </div>
       </section>
 
       <section class="flow" id="flow" :ref="registerSection">
         <div class="flow-intro">
           <p class="section-kicker">Operating flow</p>
-          <h2>Five moves from trust to audit.</h2>
+          <h2>Five moves from cold start to audited upgrade.</h2>
           <p>
-            SHUM is not a platform. It adds order to the moments where Compose upgrades become improvised.
+            Same flow whether an agent or a human is driving. The CLI returns the same JSON either way.
           </p>
         </div>
 
         <div class="steps">
-          <article v-for="(item, index) in flowSteps" :key="item.step" class="step-card" :class="{ 'step-card--last': index === flowSteps.length - 1 }">
+          <article
+            v-for="(item, index) in flowSteps"
+            :key="item.step"
+            class="step-card"
+            :class="{ 'step-card--last': index === flowSteps.length - 1 }"
+          >
             <div class="step-head">
               <span class="step-number">{{ item.step }}</span>
               <h3>{{ item.title }}</h3>
             </div>
             <p>{{ item.copy }}</p>
-            <pre><code>{{ item.command }}</code></pre>
+            <div class="code" v-html="renderCode(item.command, item.lang)" />
           </article>
         </div>
       </section>
 
       <section class="proof" id="proof" :ref="registerSection">
         <div class="proof-summary">
-          <p class="section-kicker">Operational proof</p>
-          <h2>Confidence comes from seeing the path before you take it.</h2>
+          <p class="section-kicker">A real session</p>
+          <h2>Read the run, not the terminal.</h2>
           <p>
-            SHUM puts inspection, policy, and recovery into the normal workflow — not as afterthoughts you reach for when something breaks.
+            Failures route through the same envelope as successes. Exit codes follow a documented table — agents branch on <code>.error.code</code>, never on regex.
           </p>
         </div>
 
-        <div class="proof-grid">
-          <article v-for="item in proofCards" :key="item.label" class="proof-card">
-            <p class="proof-label">{{ item.label }}</p>
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.copy }}</p>
-          </article>
-        </div>
-
-        <div class="evidence-grid">
-          <article v-for="item in evidencePanels" :key="item.label" class="evidence-card">
-            <p class="proof-label">{{ item.label }}</p>
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.copy }}</p>
-            <pre><code>{{ item.code }}</code></pre>
-          </article>
+        <div class="proof-board">
+          <div class="code" v-html="renderCode(proofSession, 'bash')" />
         </div>
       </section>
 
       <section class="start" id="start" :ref="registerSection">
         <div class="start-copy">
           <p class="section-kicker">Start here</p>
-          <h2>Up and running in five minutes.</h2>
+          <h2>Install. Register. Hand it to your agent.</h2>
           <p>
-            Point SHUM at a server you already SSH into. If the upgrade path feels clearer after the first run, it's doing its job.
+            Point shum at a server you already SSH into. The first <code>shum agent-help</code> call gives any agent everything it needs.
           </p>
           <div class="start-meta">
             <p><strong>Config</strong> <code>~/.config/shum</code></p>
@@ -364,10 +420,17 @@ const statusBlock = `release_brief:
           </div>
         </div>
 
-        <div class="install-card">
-          <pre><code>{{ installBlock }}</code></pre>
-          <p class="install-note">Source build:</p>
-          <pre><code>{{ sourceInstallBlock }}</code></pre>
+        <div class="install-stack">
+          <div class="install-card">
+            <p class="install-note">Install the CLI</p>
+            <div class="code" v-html="renderCode(installBlock, 'bash')" />
+            <p class="install-note">From source</p>
+            <div class="code" v-html="renderCode(sourceInstallBlock, 'bash')" />
+          </div>
+          <div class="install-card">
+            <p class="install-note">Install the Claude Code skill</p>
+            <div class="code" v-html="renderCode(skillInstallBlock, 'bash')" />
+          </div>
         </div>
       </section>
     </main>
@@ -375,7 +438,7 @@ const statusBlock = `release_brief:
     <footer class="footer" :ref="registerSection">
       <div class="footer-intro">
         <p class="section-kicker">Resources</p>
-        <h2>Open-source. Works with any Docker Compose stack on any Linux server.</h2>
+        <h2>Open-source. Apache 2.0. Built for self-hosted Linux.</h2>
       </div>
 
       <div class="resource-grid">
