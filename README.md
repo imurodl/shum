@@ -137,6 +137,7 @@ Remote integration tests are optional and skip automatically if SSH context is u
 ## Docs
 
 - [Agent Contract (AGENTS.md)](./AGENTS.md)
+- [Architecture](./docs/architecture.md)
 - [Testing Guide](./docs/testing.md)
 - [Project Site](https://shum.imurodl.me/)
 - [Contributing Guide](./CONTRIBUTING.md)
