@@ -151,7 +151,7 @@ func newProjectPolicySetCommand() *cobra.Command {
 				MigrationWarning: migrationWarning,
 			}
 			for _, w := range validatePolicy(policy) {
-				fmt.Fprintf(cmd.ErrOrStderr(), "Warning: %s\n", w)
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Warning: %s\n", w)
 			}
 			return opsSvc.SetPolicy(ctx, policy)
 		},
@@ -198,8 +198,8 @@ func newProjectBackupTakeCommand() *cobra.Command {
 			if outputJSON {
 				return encodeJSON(cmd, backup)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Backup %s\n", backup.ArtifactPath)
-			fmt.Fprintf(cmd.OutOrStdout(), "SHA: %s\n", backup.ArtifactSHA)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Backup %s\n", backup.ArtifactPath)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "SHA: %s\n", backup.ArtifactSHA)
 			return nil
 		},
 	}
@@ -231,7 +231,7 @@ func newProjectBackupListCommand() *cobra.Command {
 				return encodeJSON(cmd, items)
 			}
 			for _, item := range items {
-				fmt.Fprintf(
+				_, _ = fmt.Fprintf(
 					cmd.OutOrStdout(),
 					"%d\t%s\t%s\t%s\n",
 					item.ID,
@@ -311,7 +311,7 @@ func newProjectUpgradeCommand() *cobra.Command {
 			if outputJSON {
 				return encodeJSON(cmd, result)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Run: %s\nStatus: %s\nSummary: %s\n", result.RunID, result.Status, result.Summary)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Run: %s\nStatus: %s\nSummary: %s\n", result.RunID, result.Status, result.Summary)
 			return nil
 		},
 	}
@@ -358,7 +358,7 @@ func newProjectRunListCommand() *cobra.Command {
 				return encodeJSON(cmd, runs)
 			}
 			for _, run := range runs {
-				fmt.Fprintf(
+				_, _ = fmt.Fprintf(
 					cmd.OutOrStdout(),
 					"%s\t%s\t%s\t%s\t%s\n",
 					run.RunID,
@@ -455,22 +455,22 @@ func parseHealthProbes(values []string) ([]ops.HealthProbe, error) {
 }
 
 func renderPreflight(cmd *cobra.Command, result ops.PreflightResult) {
-	fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", result.HostAlias)
-	fmt.Fprintf(cmd.OutOrStdout(), "Passed: %v\n", result.Passed)
-	fmt.Fprintf(cmd.OutOrStdout(), "Docker: %s\n", result.DockerVersion)
-	fmt.Fprintf(cmd.OutOrStdout(), "Compose: %s\n", result.ComposeVersion)
-	fmt.Fprintf(cmd.OutOrStdout(), "Disk available: %d bytes (%s)\n", result.DiskBytesAvail, result.DiskPath)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", result.HostAlias)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Passed: %v\n", result.Passed)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Docker: %s\n", result.DockerVersion)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Compose: %s\n", result.ComposeVersion)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Disk available: %d bytes (%s)\n", result.DiskBytesAvail, result.DiskPath)
 	for name, status := range result.Checks {
-		fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", name, status)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", name, status)
 	}
 }
 
 func renderPlan(cmd *cobra.Command, plan ops.Plan) {
-	fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", plan.HostAlias)
-	fmt.Fprintf(cmd.OutOrStdout(), "Project: %s\n", plan.ProjectRef)
-	fmt.Fprintf(cmd.OutOrStdout(), "Preflight passed: %v\n", plan.Preflight.Passed)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", plan.HostAlias)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Project: %s\n", plan.ProjectRef)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Preflight passed: %v\n", plan.Preflight.Passed)
 	for _, item := range plan.Services {
-		fmt.Fprintf(
+		_, _ = fmt.Fprintf(
 			cmd.OutOrStdout(),
 			"%s\timage=%s\tcurrent=%s\ttarget=%s\n",
 			item.ServiceName,
@@ -480,46 +480,46 @@ func renderPlan(cmd *cobra.Command, plan ops.Plan) {
 		)
 	}
 	if len(plan.Warnings) > 0 {
-		fmt.Fprintln(cmd.OutOrStdout(), "Warnings:")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Warnings:")
 		for _, warning := range plan.Warnings {
-			fmt.Fprintf(cmd.OutOrStdout(), " - %s\n", warning)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), " - %s\n", warning)
 		}
 	}
 	if len(plan.Blocks) > 0 {
-		fmt.Fprintln(cmd.OutOrStdout(), "Blocks:")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Blocks:")
 		for _, block := range plan.Blocks {
-			fmt.Fprintf(cmd.OutOrStdout(), " - %s\n", block)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), " - %s\n", block)
 		}
 	}
 }
 
 func renderPolicy(cmd *cobra.Command, policy ops.ProjectPolicy) {
-	fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", policy.HostAlias)
-	fmt.Fprintf(cmd.OutOrStdout(), "Project: %s\n", policy.ProjectRef)
-	fmt.Fprintf(cmd.OutOrStdout(), "Require backup: %v\n", policy.RequireBackup)
-	fmt.Fprintf(cmd.OutOrStdout(), "Backup command: %s\n", policy.BackupCommand)
-	fmt.Fprintf(cmd.OutOrStdout(), "Restore command: %s\n", policy.RestoreCommand)
-	fmt.Fprintf(cmd.OutOrStdout(), "Migration warning: %v\n", policy.MigrationWarning)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", policy.HostAlias)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Project: %s\n", policy.ProjectRef)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Require backup: %v\n", policy.RequireBackup)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Backup command: %s\n", policy.BackupCommand)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Restore command: %s\n", policy.RestoreCommand)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Migration warning: %v\n", policy.MigrationWarning)
 	for _, probe := range policy.HealthChecks {
-		fmt.Fprintf(cmd.OutOrStdout(), "Probe: %s:%s\n", probe.Type, probe.Target)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Probe: %s:%s\n", probe.Type, probe.Target)
 	}
 }
 
 func renderRun(cmd *cobra.Command, run ops.RunRecord) {
-	fmt.Fprintf(cmd.OutOrStdout(), "Run: %s\n", run.RunID)
-	fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", run.HostAlias)
-	fmt.Fprintf(cmd.OutOrStdout(), "Project: %s\n", run.ProjectRef)
-	fmt.Fprintf(cmd.OutOrStdout(), "Status: %s\n", run.Status)
-	fmt.Fprintf(cmd.OutOrStdout(), "Started: %s\n", run.StartedAt.Format(time.RFC3339))
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Run: %s\n", run.RunID)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", run.HostAlias)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Project: %s\n", run.ProjectRef)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Status: %s\n", run.Status)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Started: %s\n", run.StartedAt.Format(time.RFC3339))
 	if !run.FinishedAt.IsZero() {
-		fmt.Fprintf(cmd.OutOrStdout(), "Finished: %s\n", run.FinishedAt.Format(time.RFC3339))
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Finished: %s\n", run.FinishedAt.Format(time.RFC3339))
 	}
-	fmt.Fprintf(cmd.OutOrStdout(), "Summary: %s\n", run.Summary)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Summary: %s\n", run.Summary)
 	if run.FailureReason != "" {
-		fmt.Fprintf(cmd.OutOrStdout(), "Failure: %s\n", run.FailureReason)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Failure: %s\n", run.FailureReason)
 	}
-	fmt.Fprintf(cmd.OutOrStdout(), "Backup artifact: %s\n", run.BackupArtifact)
-	fmt.Fprintf(cmd.OutOrStdout(), "Events: %d\n", len(run.Events))
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Backup artifact: %s\n", run.BackupArtifact)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Events: %d\n", len(run.Events))
 }
 
 func validatePolicy(p ops.ProjectPolicy) []string {

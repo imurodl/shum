@@ -72,10 +72,10 @@ func newHostRegisterCommand() *cobra.Command {
 				}
 				return encodeJSON(cmd, out)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Registered host %s (%s:%d) as %s\n", host.Alias, host.Hostname, host.Port, host.RemoteOS)
-			fmt.Fprintf(cmd.OutOrStdout(), "Docker: %s\n", host.DockerVersion)
-			fmt.Fprintf(cmd.OutOrStdout(), "Compose: %s\n", host.ComposeVersion)
-			fmt.Fprintf(cmd.OutOrStdout(), "Last verified: %s\n", host.LastVerifiedAt.Format(time.RFC3339))
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Registered host %s (%s:%d) as %s\n", host.Alias, host.Hostname, host.Port, host.RemoteOS)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Docker: %s\n", host.DockerVersion)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Compose: %s\n", host.ComposeVersion)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Last verified: %s\n", host.LastVerifiedAt.Format(time.RFC3339))
 			return nil
 		},
 	}
@@ -103,7 +103,7 @@ func newHostListCommand() *cobra.Command {
 				return encodeJSON(cmd, rows)
 			}
 			for _, row := range rows {
-				fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s:%d\t%s\n", row.Alias, row.Hostname, row.UserName, row.Port, row.RemoteOS)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s:%d\t%s\n", row.Alias, row.Hostname, row.UserName, row.Port, row.RemoteOS)
 			}
 			return nil
 		},
@@ -133,10 +133,10 @@ func newHostInspectCommand() *cobra.Command {
 			if outputJSON {
 				return encodeJSON(cmd, host)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", host.Alias)
-			fmt.Fprintf(cmd.OutOrStdout(), "Resolved: %s:%d\n", host.Hostname, host.Port)
-			fmt.Fprintf(cmd.OutOrStdout(), "User: %s\n", host.UserName)
-			fmt.Fprintf(cmd.OutOrStdout(), "Trust: %s\n", host.TrustSummary())
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Host: %s\n", host.Alias)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Resolved: %s:%d\n", host.Hostname, host.Port)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "User: %s\n", host.UserName)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Trust: %s\n", host.TrustSummary())
 			return nil
 		},
 	}
@@ -157,4 +157,3 @@ func newHostService() (*hosts.Service, error) {
 	runner := remote.NewRunner(20 * time.Second)
 	return hosts.NewService(repo, runner), nil
 }
-

@@ -15,13 +15,13 @@ var Version = "dev"
 const agentContractRevision = "1"
 
 type agentHelpDoc struct {
-	Tool         agentTool                `json:"tool"`
-	Description  string                   `json:"description"`
-	Contract     agentContract            `json:"contract"`
-	Commands     []agentCommand           `json:"commands"`
-	Errors       map[string]agentError    `json:"errors"`
-	OutputShapes map[string]string        `json:"output_shapes"`
-	Examples     []agentExample           `json:"examples"`
+	Tool         agentTool             `json:"tool"`
+	Description  string                `json:"description"`
+	Contract     agentContract         `json:"contract"`
+	Commands     []agentCommand        `json:"commands"`
+	Errors       map[string]agentError `json:"errors"`
+	OutputShapes map[string]string     `json:"output_shapes"`
+	Examples     []agentExample        `json:"examples"`
 }
 
 type agentTool struct {
@@ -38,12 +38,12 @@ type agentContract struct {
 }
 
 type agentCommand struct {
-	Path    string       `json:"path"`
-	Short   string       `json:"short"`
-	Long    string       `json:"long,omitempty"`
-	Args    string       `json:"args,omitempty"`
-	Flags   []agentFlag  `json:"flags,omitempty"`
-	Returns string       `json:"returns,omitempty"`
+	Path    string      `json:"path"`
+	Short   string      `json:"short"`
+	Long    string      `json:"long,omitempty"`
+	Args    string      `json:"args,omitempty"`
+	Flags   []agentFlag `json:"flags,omitempty"`
+	Returns string      `json:"returns,omitempty"`
 }
 
 type agentFlag struct {
@@ -164,22 +164,22 @@ func collectErrors() map[string]agentError {
 // agents have a stable target type to parse against.
 func outputShapes() map[string]string {
 	return map[string]string{
-		"host register":         "ops.HostOutput {alias, hostname, user, port, last_verified_at, remote_os, remote_arch, docker_version, compose_version, known_hosts_files, fingerprint}",
-		"host list":             "[]hosts.Host",
-		"host inspect":          "hosts.Host",
-		"project discover":      "[]discovery.RuntimeProject {name, status, directory, compose_files, profiles}",
-		"project inspect":       "inspect.Result {project_ref, project_name, project_directory, compose_files, profiles, env_files, config?, mounts?}",
-		"project preflight":     "ops.PreflightResult {host_alias, docker_available, compose_available, docker_version, compose_version, disk_bytes_available, disk_path, permissions_ok, checks, passed}",
-		"project plan":          "ops.Plan {host_alias, project_ref, run_id, preflight, services, actions, policy, created_at, warnings, blocks}",
-		"project policy show":   "ops.ProjectPolicy {require_backup, backup_command, restore_command, health_checks, migration_warning}",
-		"project policy set":    "(no body; non-zero exit on failure)",
-		"project backup take":   "ops.BackupResult {id, host_alias, project_ref, artifact_path, artifact_sha256, command, created_at, size_bytes}",
-		"project backup list":   "[]ops.BackupResult",
+		"host register":          "ops.HostOutput {alias, hostname, user, port, last_verified_at, remote_os, remote_arch, docker_version, compose_version, known_hosts_files, fingerprint}",
+		"host list":              "[]hosts.Host",
+		"host inspect":           "hosts.Host",
+		"project discover":       "[]discovery.RuntimeProject {name, status, directory, compose_files, profiles}",
+		"project inspect":        "inspect.Result {project_ref, project_name, project_directory, compose_files, profiles, env_files, config?, mounts?}",
+		"project preflight":      "ops.PreflightResult {host_alias, docker_available, compose_available, docker_version, compose_version, disk_bytes_available, disk_path, permissions_ok, checks, passed}",
+		"project plan":           "ops.Plan {host_alias, project_ref, run_id, preflight, services, actions, policy, created_at, warnings, blocks}",
+		"project policy show":    "ops.ProjectPolicy {require_backup, backup_command, restore_command, health_checks, migration_warning}",
+		"project policy set":     "(no body; non-zero exit on failure)",
+		"project backup take":    "ops.BackupResult {id, host_alias, project_ref, artifact_path, artifact_sha256, command, created_at, size_bytes}",
+		"project backup list":    "[]ops.BackupResult",
 		"project backup restore": "(no body; non-zero exit on failure)",
-		"project upgrade":       "ops.UpgradeResult {run_id, status: planned|running|success|failed|rolled_back, summary}",
-		"project run list":      "[]ops.RunRecord",
-		"project run show":      "ops.RunRecord {id, run_id, host_alias, project_ref, status, started_at, finished_at, preflight, plan, summary, backup_artifact, failure_reason, events: []RunEvent}",
-		"agent-help":            "shum.agentHelpDoc (this document)",
+		"project upgrade":        "ops.UpgradeResult {run_id, status: planned|running|success|failed|rolled_back, summary}",
+		"project run list":       "[]ops.RunRecord",
+		"project run show":       "ops.RunRecord {id, run_id, host_alias, project_ref, status, started_at, finished_at, preflight, plan, summary, backup_artifact, failure_reason, events: []RunEvent}",
+		"agent-help":             "shum.agentHelpDoc (this document)",
 	}
 }
 

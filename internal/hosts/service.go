@@ -59,16 +59,16 @@ func (s *Service) Register(ctx context.Context, alias string) (Host, error) {
 	}
 
 	host := Host{
-		Alias:             alias,
-		Hostname:          resolved.Hostname,
-		UserName:          resolved.User,
-		Port:              resolved.Port,
-		KnownHostsFiles:   files,
+		Alias:              alias,
+		Hostname:           resolved.Hostname,
+		UserName:           resolved.User,
+		Port:               resolved.Port,
+		KnownHostsFiles:    files,
 		HostKeyFingerprint: fingerprint,
-		RemoteOS:          probe.OS,
-		RemoteArch:        probe.Arch,
-		DockerVersion:     probe.DockerVersion,
-		ComposeVersion:    probe.ComposeVersion,
+		RemoteOS:           probe.OS,
+		RemoteArch:         probe.Arch,
+		DockerVersion:      probe.DockerVersion,
+		ComposeVersion:     probe.ComposeVersion,
 		LastVerifiedAt:     time.Now().UTC(),
 	}
 

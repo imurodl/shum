@@ -10,10 +10,10 @@ import (
 
 func TestHostServiceTrustSummary(t *testing.T) {
 	host := Host{
-		Alias:             "sample",
-		Hostname:          "127.0.0.1",
-		UserName:          "root",
-		Port:              22,
+		Alias:              "sample",
+		Hostname:           "127.0.0.1",
+		UserName:           "root",
+		Port:               22,
 		HostKeyFingerprint: "SHA256:test",
 		LastVerifiedAt:     time.Now().UTC(),
 	}

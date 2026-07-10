@@ -1,8 +1,8 @@
 package ssh
 
 import (
-	"crypto/sha256"
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"os/exec"

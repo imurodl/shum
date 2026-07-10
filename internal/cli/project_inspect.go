@@ -60,9 +60,9 @@ func newProjectInspectCommand() *cobra.Command {
 			}
 			inspect.RenderSummary(cmd.OutOrStdout(), result)
 			if showConfig {
-				fmt.Fprintln(cmd.OutOrStdout(), "")
-				fmt.Fprintln(cmd.OutOrStdout(), "Config:")
-				fmt.Fprintln(cmd.OutOrStdout(), result.Config)
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Config:")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), result.Config)
 			}
 			return nil
 		},

@@ -152,7 +152,7 @@ func (s *Service) discoverFromContainers(ctx context.Context, hostAlias string) 
 	}
 
 	type containerEntry struct {
-		Name  string `json:"Names"`
+		Name   string            `json:"Names"`
 		Labels map[string]string `json:"Labels"`
 	}
 	lines := strings.Split(raw, "\n")

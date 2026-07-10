@@ -94,7 +94,7 @@ func (r *ProjectRepository) ListByHost(ctx context.Context, hostAlias string) ([
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	out := make([]ProjectRecord, 0, 16)
 	for rows.Next() {

@@ -96,20 +96,20 @@ func TestAgentHelpReturnsHaveShape(t *testing.T) {
 	root := NewRootCommand()
 	doc := buildAgentHelp(root)
 	jsonCommands := map[string]bool{
-		"host register":          true,
-		"host list":              true,
-		"host inspect":           true,
-		"project discover":       true,
-		"project inspect":        true,
-		"project preflight":      true,
-		"project plan":           true,
-		"project policy show":    true,
-		"project backup take":    true,
-		"project backup list":    true,
-		"project upgrade":        true,
-		"project run list":       true,
-		"project run show":       true,
-		"agent-help":             true,
+		"host register":       true,
+		"host list":           true,
+		"host inspect":        true,
+		"project discover":    true,
+		"project inspect":     true,
+		"project preflight":   true,
+		"project plan":        true,
+		"project policy show": true,
+		"project backup take": true,
+		"project backup list": true,
+		"project upgrade":     true,
+		"project run list":    true,
+		"project run show":    true,
+		"agent-help":          true,
 	}
 	for _, c := range doc.Commands {
 		if jsonCommands[c.Path] && strings.TrimSpace(c.Returns) == "" {

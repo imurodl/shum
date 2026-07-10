@@ -13,18 +13,18 @@ import (
 )
 
 type Host struct {
-	ID                int64
-	Alias             string
-	Hostname          string
-	UserName          string
-	Port              int
-	KnownHostsFiles   []string
+	ID                 int64
+	Alias              string
+	Hostname           string
+	UserName           string
+	Port               int
+	KnownHostsFiles    []string
 	HostKeyFingerprint string
-	RemoteOS          string
-	RemoteArch        string
-	DockerVersion     string
-	ComposeVersion    string
-	LastVerifiedAt    time.Time
+	RemoteOS           string
+	RemoteArch         string
+	DockerVersion      string
+	ComposeVersion     string
+	LastVerifiedAt     time.Time
 }
 
 type Repository struct {
@@ -82,7 +82,7 @@ func (r *Repository) List(ctx context.Context) ([]Host, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	hosts := make([]Host, 0, 32)
 	for rows.Next() {

@@ -13,13 +13,13 @@ type HealthProbe struct {
 }
 
 type ProjectPolicy struct {
-	HostAlias        string       `json:"-"`
-	ProjectRef       string       `json:"-"`
-	RequireBackup    bool         `json:"require_backup"`
-	BackupCommand    string       `json:"backup_command"`
-	RestoreCommand   string       `json:"restore_command"`
+	HostAlias        string        `json:"-"`
+	ProjectRef       string        `json:"-"`
+	RequireBackup    bool          `json:"require_backup"`
+	BackupCommand    string        `json:"backup_command"`
+	RestoreCommand   string        `json:"restore_command"`
 	HealthChecks     []HealthProbe `json:"health_checks"`
-	MigrationWarning bool         `json:"migration_warning"`
+	MigrationWarning bool          `json:"migration_warning"`
 }
 
 func (p ProjectPolicy) ProbeJSON() (string, error) {
@@ -64,16 +64,16 @@ type ServiceChange struct {
 }
 
 type Plan struct {
-	HostAlias  string                  `json:"host_alias"`
-	ProjectRef string                  `json:"project_ref"`
-	RunID      string                  `json:"run_id"`
-	Preflight  PreflightResult         `json:"preflight"`
-	Services   []ServiceChange         `json:"services"`
-	Actions    []PlanAction            `json:"actions"`
-	Policy     ProjectPolicy           `json:"policy"`
-	CreatedAt  string                  `json:"created_at"`
-	Warnings   []string                `json:"warnings"`
-	Blocks     []string                `json:"blocks"`
+	HostAlias  string          `json:"host_alias"`
+	ProjectRef string          `json:"project_ref"`
+	RunID      string          `json:"run_id"`
+	Preflight  PreflightResult `json:"preflight"`
+	Services   []ServiceChange `json:"services"`
+	Actions    []PlanAction    `json:"actions"`
+	Policy     ProjectPolicy   `json:"policy"`
+	CreatedAt  string          `json:"created_at"`
+	Warnings   []string        `json:"warnings"`
+	Blocks     []string        `json:"blocks"`
 }
 
 type PlanAction struct {
@@ -104,27 +104,27 @@ type BackupResult struct {
 type RunStatus string
 
 const (
-	RunStatusPlanned   RunStatus = "planned"
-	RunStatusRunning   RunStatus = "running"
-	RunStatusSuccess   RunStatus = "success"
-	RunStatusFailed    RunStatus = "failed"
+	RunStatusPlanned    RunStatus = "planned"
+	RunStatusRunning    RunStatus = "running"
+	RunStatusSuccess    RunStatus = "success"
+	RunStatusFailed     RunStatus = "failed"
 	RunStatusRolledBack RunStatus = "rolled_back"
 )
 
 type RunRecord struct {
-	ID             int64       `json:"id"`
-	RunID          string      `json:"run_id"`
-	HostAlias      string      `json:"host_alias"`
-	ProjectRef     string      `json:"project_ref"`
-	Status         RunStatus   `json:"status"`
-	StartedAt      time.Time   `json:"started_at"`
-	FinishedAt     time.Time   `json:"finished_at"`
-	Preflight      string      `json:"preflight"`
-	Plan           string      `json:"plan"`
-	Summary        string      `json:"summary"`
-	BackupArtifact string      `json:"backup_artifact"`
-	FailureReason  string      `json:"failure_reason"`
-	Events         []RunEvent  `json:"events"`
+	ID             int64      `json:"id"`
+	RunID          string     `json:"run_id"`
+	HostAlias      string     `json:"host_alias"`
+	ProjectRef     string     `json:"project_ref"`
+	Status         RunStatus  `json:"status"`
+	StartedAt      time.Time  `json:"started_at"`
+	FinishedAt     time.Time  `json:"finished_at"`
+	Preflight      string     `json:"preflight"`
+	Plan           string     `json:"plan"`
+	Summary        string     `json:"summary"`
+	BackupArtifact string     `json:"backup_artifact"`
+	FailureReason  string     `json:"failure_reason"`
+	Events         []RunEvent `json:"events"`
 }
 
 type RunEvent struct {

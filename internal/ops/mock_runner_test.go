@@ -57,12 +57,6 @@ func (m *mockRunner) upgradeOK() {
 	m.on("docker compose up -d", "", nil)
 }
 
-// upgradeOKWithBackup sets up mock responses for a successful upgrade with backup.
-func (m *mockRunner) upgradeOKWithBackup() {
-	m.upgradeOK()
-	m.on("SHUM_BACKUP_ARTIFACT=", "backup data", nil)
-}
-
 // pullFails sets up mock response for a failed compose pull.
 func (m *mockRunner) pullFails() {
 	m.on("docker compose pull", "", fmt.Errorf("network timeout"))

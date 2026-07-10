@@ -9,11 +9,11 @@ import (
 )
 
 type ResolvedConfig struct {
-	Alias       string
-	User        string
-	Hostname    string
-	Port        int
-	IdentityFiles []string
+	Alias          string
+	User           string
+	Hostname       string
+	Port           int
+	IdentityFiles  []string
 	KnownHostFiles []string
 }
 

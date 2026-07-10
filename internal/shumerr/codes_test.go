@@ -50,7 +50,6 @@ func TestFromExtractsThroughErrorChain(t *testing.T) {
 }
 
 func wrapErr(err error) error {
-	type holder struct{ inner error }
 	// use a wrapping error type to ensure errors.As traversal
 	return &chainedErr{inner: err}
 }

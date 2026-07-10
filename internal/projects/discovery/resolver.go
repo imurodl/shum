@@ -3,11 +3,11 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"github.com/imurodl/shum/internal/projects"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
-	"github.com/imurodl/shum/internal/projects"
 )
 
 var defaultComposeFilenames = []string{
@@ -20,7 +20,7 @@ var defaultComposeFilenames = []string{
 type ResolveOptions struct {
 	HostAlias  string
 	ProjectRef string
-	Paths     []string
+	Paths      []string
 }
 
 type Resolver struct{}
@@ -64,22 +64,22 @@ func (r *Resolver) Resolve(ctx context.Context, opts ResolveOptions) ([]RuntimeP
 		}
 		if len(found) > 1 {
 			output = append(output, RuntimeProject{
-				Name:       projectName,
-				Status:     projects.StatusAmbiguous,
-				Source:     "path",
-				Directory:  dir,
+				Name:         projectName,
+				Status:       projects.StatusAmbiguous,
+				Source:       "path",
+				Directory:    dir,
 				ComposeFiles: found,
-				Reason:     "multiple compose files found; use --file to set exact order",
+				Reason:       "multiple compose files found; use --file to set exact order",
 			})
 			continue
 		}
 		output = append(output, RuntimeProject{
-			Name:       projectName,
-			Status:     projects.StatusRuntimeOnly,
-			Source:     "path",
-			Directory:  dir,
+			Name:         projectName,
+			Status:       projects.StatusRuntimeOnly,
+			Source:       "path",
+			Directory:    dir,
 			ComposeFiles: found,
-			Reason:     "path discovered without runtime context",
+			Reason:       "path discovered without runtime context",
 		})
 	}
 	if len(output) == 0 {

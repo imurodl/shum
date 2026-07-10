@@ -64,14 +64,14 @@ func newProjectDiscoverCommand() *cobra.Command {
 
 func mapToProjectRecord(alias string, source discovery.RuntimeProject) projects.ProjectRecord {
 	return projects.ProjectRecord{
-		HostAlias: alias,
-		ProjectRef: source.Name,
-		Status: source.Status,
-		Canonical: source.Status == projects.StatusCanonical,
-		ProjectName: source.Name,
+		HostAlias:        alias,
+		ProjectRef:       source.Name,
+		Status:           source.Status,
+		Canonical:        source.Status == projects.StatusCanonical,
+		ProjectName:      source.Name,
 		ProjectDirectory: source.Directory,
-		ComposeFiles: source.ComposeFiles,
-		ActiveProfiles: source.Profiles,
+		ComposeFiles:     source.ComposeFiles,
+		ActiveProfiles:   source.Profiles,
 	}
 }
 

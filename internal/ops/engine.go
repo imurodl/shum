@@ -212,7 +212,7 @@ func (s *Service) RunUpgrade(ctx context.Context, hostAlias, projectRef string, 
 	if err != nil {
 		return UpgradeResult{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback() // no-op after commit
+	defer func() { _ = tx.Rollback() }() // no-op after commit
 	repo := s.opsRepo.WithTx(tx)
 
 	runID := fmt.Sprintf("run-%d", time.Now().UnixNano())

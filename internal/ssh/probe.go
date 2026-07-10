@@ -8,9 +8,9 @@ import (
 )
 
 type ProbeResult struct {
-	OS            string
-	Arch          string
-	DockerVersion string
+	OS             string
+	Arch           string
+	DockerVersion  string
 	ComposeVersion string
 }
 

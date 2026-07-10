@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strconv"
-	"strings"
 
 	"github.com/imurodl/shum/internal/projects"
 )
@@ -16,17 +14,17 @@ type SummaryOptions struct {
 }
 
 func RenderDiscoverSummary(out io.Writer, opts SummaryOptions) {
-	fmt.Fprintf(out, "Host: %s\n", opts.HostAlias)
-	fmt.Fprintf(out, "Projects discovered: %d\n", len(opts.Projects))
-	fmt.Fprintln(out, "Ref\tStatus\tSource\tContext")
+	_, _ = fmt.Fprintf(out, "Host: %s\n", opts.HostAlias)
+	_, _ = fmt.Fprintf(out, "Projects discovered: %d\n", len(opts.Projects))
+	_, _ = fmt.Fprintln(out, "Ref\tStatus\tSource\tContext")
 	for _, project := range opts.Projects {
 		context := project.Directory
 		if len(project.ComposeFiles) > 0 {
 			context = project.ComposeFiles[0]
 		}
-		fmt.Fprintf(out, "%s\t%s\t%s\t%s\n", project.Name, project.Status, project.Source, context)
+		_, _ = fmt.Fprintf(out, "%s\t%s\t%s\t%s\n", project.Name, project.Status, project.Source, context)
 	}
-	fmt.Fprintln(out, "")
+	_, _ = fmt.Fprintln(out, "")
 }
 
 func RenderDiscoverJSON(projects []RuntimeProject) string {
@@ -43,12 +41,4 @@ func RenderCountByStatus(runtimeProjects []RuntimeProject) map[projects.ProjectS
 		counts[project.Status]++
 	}
 	return counts
-}
-
-func statusBadge(counts map[projects.ProjectStatus]int) string {
-	parts := make([]string, 0, len(counts))
-	for key, value := range counts {
-		parts = append(parts, string(key)+":"+strconv.Itoa(value))
-	}
-	return strings.Join(parts, ", ")
 }

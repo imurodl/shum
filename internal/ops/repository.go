@@ -118,7 +118,7 @@ func (r *Repository) ListBackups(ctx context.Context, hostAlias, projectRef stri
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	out := make([]BackupResult, 0, 16)
 	for rows.Next() {
@@ -300,7 +300,7 @@ func (r *Repository) listEvents(ctx context.Context, runID string) ([]RunEvent, 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]RunEvent, 0, 16)
 	for rows.Next() {
 		var e RunEvent
@@ -335,7 +335,7 @@ func (r *Repository) ListRuns(ctx context.Context, limit int, hostAlias, project
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	out := make([]RunRecord, 0, 16)
 	for rows.Next() {

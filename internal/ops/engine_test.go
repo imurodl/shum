@@ -174,7 +174,7 @@ func TestRunUpgradeTransactionRollbackLeavesNoState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open store: %v", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	ctx := context.Background()
 	repo := NewRepository(db)

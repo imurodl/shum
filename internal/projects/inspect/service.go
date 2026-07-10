@@ -100,17 +100,17 @@ func (s *Service) Inspect(ctx context.Context, hostAlias string, options Inspect
 	declaredProfiles, activeProfiles := resolveProfileOutputs(profilesRaw, options.Profiles)
 
 	result := InspectResult{
-		HostAlias:       host.Alias,
+		HostAlias:        host.Alias,
 		TrustFingerprint: host.HostKeyFingerprint,
-		Project:         project,
-		Services:        splitLines(servicesRaw),
-		Volumes:         splitLines(volumesRaw),
-		Networks:        splitLines(networksRaw),
-		Profiles:        declaredProfiles,
-		ActiveProfiles:  activeProfiles,
-		Status:          string(projects.StatusCanonical),
-		Config:          maybeRedactConfig(configRaw, options.ShowConfig),
-		Reasons:         []string{},
+		Project:          project,
+		Services:         splitLines(servicesRaw),
+		Volumes:          splitLines(volumesRaw),
+		Networks:         splitLines(networksRaw),
+		Profiles:         declaredProfiles,
+		ActiveProfiles:   activeProfiles,
+		Status:           string(projects.StatusCanonical),
+		Config:           maybeRedactConfig(configRaw, options.ShowConfig),
+		Reasons:          []string{},
 	}
 	if len(options.Profiles) == 0 && containsPotentialProfiles(result.Profiles) {
 		result.Status = string(projects.StatusAmbiguous)
@@ -119,7 +119,7 @@ func (s *Service) Inspect(ctx context.Context, hostAlias string, options Inspect
 
 	if err := s.saveArtifacts(ctx, hostAlias, options.ProjectRef, configRaw, psRaw, ""); err == nil {
 		result.Artifact = InspectArtifact{
-			ContextJSONPath: filepath.Join(hostAlias, options.ProjectRef, "config.json"),
+			ContextJSONPath:  filepath.Join(hostAlias, options.ProjectRef, "config.json"),
 			RuntimeStatePath: filepath.Join(hostAlias, options.ProjectRef, "runtime.json"),
 		}
 	}

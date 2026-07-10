@@ -8,19 +8,6 @@ import (
 	"github.com/imurodl/shum/internal/shumerr"
 )
 
-// jsonModeRequested reports whether the caller asked for machine-readable
-// JSON on this command (or any ancestor). It is safe to call on commands
-// that do not declare a --json flag.
-func jsonModeRequested(cmd *cobra.Command) bool {
-	if cmd == nil {
-		return false
-	}
-	if v, err := cmd.Flags().GetBool("json"); err == nil {
-		return v
-	}
-	return false
-}
-
 // emitJSON writes payload to stdout as indented JSON followed by a newline.
 // Used as the canonical structured-output writer for success cases.
 func emitJSON(cmd *cobra.Command, payload any) error {
