@@ -1,6 +1,7 @@
 # Self-Host Upgrade Manager (SHUM)
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/imurodl/shum/.github/workflows/deploy-site.yml?label=site)
+![CI](https://img.shields.io/github/actions/workflow/status/imurodl/shum/ci.yml?branch=main&label=ci)
+![Site](https://img.shields.io/github/actions/workflow/status/imurodl/shum/deploy-site.yml?branch=main&label=site)
 ![GitHub last commit](https://img.shields.io/github/last-commit/imurodl/shum)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
