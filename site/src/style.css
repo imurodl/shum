@@ -31,8 +31,16 @@ body {
   color: var(--ink);
   font-family: 'IBM Plex Sans', sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(241, 178, 74, 0.24), transparent 28%),
-    radial-gradient(circle at 85% 12%, rgba(45, 105, 199, 0.12), transparent 22%),
+    radial-gradient(
+      circle at top left,
+      rgba(241, 178, 74, 0.24),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 85% 12%,
+      rgba(45, 105, 199, 0.12),
+      transparent 22%
+    ),
     linear-gradient(180deg, #f8f1e4 0%, #f5ecdc 46%, #f2e7d5 100%);
 }
 
@@ -104,7 +112,11 @@ pre code {
   inset: 58% -8% auto auto;
   width: 22rem;
   height: 22rem;
-  background: radial-gradient(circle, rgba(45, 105, 199, 0.07), transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(45, 105, 199, 0.07),
+    transparent 70%
+  );
 }
 
 .masthead,
@@ -250,7 +262,9 @@ pre code {
 .footer {
   opacity: 0;
   transform: translateY(12px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
 }
 
 .hero.visible,
@@ -396,7 +410,9 @@ pre code {
   border: 2px solid var(--line);
   font-weight: 700;
   text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .button:hover,
@@ -420,7 +436,9 @@ pre code {
   display: grid;
   gap: 1.1rem;
   padding: 1.5rem;
-  box-shadow: 0 0 0 2px rgba(23, 18, 15, 0.04), var(--shadow-soft);
+  box-shadow:
+    0 0 0 2px rgba(23, 18, 15, 0.04),
+    var(--shadow-soft);
 }
 
 .board-header {
@@ -466,7 +484,9 @@ pre code {
 }
 
 /* Shiki injects spans with inline styles; ensure tokens override fallback color. */
-.code pre code span { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+.code pre code span {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+}
 
 .board-notes {
   display: grid;

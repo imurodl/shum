@@ -79,7 +79,8 @@ const messages = {
       notes: {
         code: 'Stable across patch releases. Parse <code>.error.code</code>, never the message.',
         hint: 'Operator guidance the agent can surface verbatim to the user.',
-        details: 'Structured context: which alias, which project, which artifact.',
+        details:
+          'Structured context: which alias, which project, which artifact.',
       },
     },
     agents: {
@@ -108,15 +109,18 @@ const messages = {
       cards: [
         {
           tag: 'Skill + slash command',
-          blurb: 'Trigger by natural language ("upgrade web on prod") or by /shum-upgrade. Includes the canonical safe-upgrade flow and hard failure-handling rules.',
+          blurb:
+            'Trigger by natural language ("upgrade web on prod") or by /shum-upgrade. Includes the canonical safe-upgrade flow and hard failure-handling rules.',
         },
         {
           tag: 'AGENTS.md drop-in',
-          blurb: 'Codex reads AGENTS.md hierarchically. Drop the file in your repo or merge the rules into your existing one.',
+          blurb:
+            'Codex reads AGENTS.md hierarchically. Drop the file in your repo or merge the rules into your existing one.',
         },
         {
           tag: 'GEMINI.md drop-in',
-          blurb: 'Gemini CLI loads GEMINI.md hierarchically and supports @file imports. Reference shum\'s rules from your existing GEMINI.md.',
+          blurb:
+            "Gemini CLI loads GEMINI.md hierarchically and supports @file imports. Reference shum's rules from your existing GEMINI.md.",
         },
       ],
     },
@@ -215,7 +219,8 @@ const messages = {
       notes: {
         code: '패치 릴리스 간에도 안정적입니다. 메시지가 아니라 <code>.error.code</code>를 파싱하세요.',
         hint: '에이전트가 사용자에게 그대로 전달할 수 있는 운영 안내입니다.',
-        details: '구조화된 컨텍스트: 어떤 별칭, 어떤 프로젝트, 어떤 아티팩트인지.',
+        details:
+          '구조화된 컨텍스트: 어떤 별칭, 어떤 프로젝트, 어떤 아티팩트인지.',
       },
     },
     agents: {
@@ -244,15 +249,18 @@ const messages = {
       cards: [
         {
           tag: '스킬 + 슬래시 명령',
-          blurb: '자연어("prod의 web 업그레이드")나 /shum-upgrade로 실행합니다. 표준 안전 업그레이드 플로우와 엄격한 실패 처리 규칙이 포함되어 있습니다.',
+          blurb:
+            '자연어("prod의 web 업그레이드")나 /shum-upgrade로 실행합니다. 표준 안전 업그레이드 플로우와 엄격한 실패 처리 규칙이 포함되어 있습니다.',
         },
         {
           tag: 'AGENTS.md 드롭인',
-          blurb: 'Codex는 AGENTS.md를 계층적으로 읽습니다. 파일을 저장소에 넣거나 기존 파일에 규칙을 병합하세요.',
+          blurb:
+            'Codex는 AGENTS.md를 계층적으로 읽습니다. 파일을 저장소에 넣거나 기존 파일에 규칙을 병합하세요.',
         },
         {
           tag: 'GEMINI.md 드롭인',
-          blurb: 'Gemini CLI는 GEMINI.md를 계층적으로 로드하며 @file 임포트를 지원합니다. 기존 GEMINI.md에서 shum의 규칙을 참조하세요.',
+          blurb:
+            'Gemini CLI는 GEMINI.md를 계층적으로 로드하며 @file 임포트를 지원합니다. 기존 GEMINI.md에서 shum의 규칙을 참조하세요.',
         },
       ],
     },
@@ -397,15 +405,21 @@ const flowMeta = [
     command: 'shum host list --json\nshum project discover prod --json',
     lang: 'bash',
   },
-  { step: '03', command: 'shum project policy show prod web --json', lang: 'bash' },
+  {
+    step: '03',
+    command: 'shum project policy show prod web --json',
+    lang: 'bash',
+  },
   {
     step: '04',
-    command: 'shum project plan prod web --json\nshum project upgrade prod web --dry-run --json',
+    command:
+      'shum project plan prod web --json\nshum project upgrade prod web --dry-run --json',
     lang: 'bash',
   },
   {
     step: '05',
-    command: 'shum project upgrade prod web --json\nshum project run show <run-id> --json',
+    command:
+      'shum project upgrade prod web --json\nshum project run show <run-id> --json',
     lang: 'bash',
   },
 ]
@@ -418,19 +432,19 @@ const resourceHrefs = [
 ]
 
 const navLinks = computed(() =>
-  t.value.nav.map((label, i) => ({ label, href: navHrefs[i] }))
+  t.value.nav.map((label, i) => ({ label, href: navHrefs[i] })),
 )
 const agentPillars = computed(() =>
-  t.value.agents.pillars.map((p, i) => ({ ...p, ...pillarCode[i] }))
+  t.value.agents.pillars.map((p, i) => ({ ...p, ...pillarCode[i] })),
 )
 const harnessCards = computed(() =>
-  t.value.harness.cards.map((c, i) => ({ ...c, ...harnessMeta[i] }))
+  t.value.harness.cards.map((c, i) => ({ ...c, ...harnessMeta[i] })),
 )
 const flowSteps = computed(() =>
-  t.value.flow.steps.map((s, i) => ({ ...s, ...flowMeta[i] }))
+  t.value.flow.steps.map((s, i) => ({ ...s, ...flowMeta[i] })),
 )
 const resourceCards = computed(() =>
-  t.value.footer.resources.map((r, i) => ({ ...r, href: resourceHrefs[i] }))
+  t.value.footer.resources.map((r, i) => ({ ...r, href: resourceHrefs[i] })),
 )
 
 const proofSession = `$ shum project upgrade prod web --json
@@ -494,7 +508,7 @@ onMounted(async () => {
         }
       })
     },
-    { threshold: 0.08 }
+    { threshold: 0.08 },
   )
   sectionRefs.forEach((el, i) => {
     if (i === 0) {
@@ -540,7 +554,9 @@ onMounted(async () => {
       </a>
 
       <nav class="nav" aria-label="Primary">
-        <a v-for="item in navLinks" :key="item.href" :href="item.href">{{ item.label }}</a>
+        <a v-for="item in navLinks" :key="item.href" :href="item.href">{{
+          item.label
+        }}</a>
       </nav>
 
       <div class="masthead-actions">
@@ -631,7 +647,11 @@ onMounted(async () => {
         </div>
 
         <div class="pillars">
-          <article v-for="pillar in agentPillars" :key="pillar.title" class="pillar-card">
+          <article
+            v-for="pillar in agentPillars"
+            :key="pillar.title"
+            class="pillar-card"
+          >
             <h3>{{ pillar.title }}</h3>
             <p>{{ pillar.copy }}</p>
             <div class="code" v-html="renderCode(pillar.code, pillar.lang)" />
@@ -707,8 +727,14 @@ onMounted(async () => {
           <h2>{{ t.start.h2 }}</h2>
           <p v-html="t.start.copy"></p>
           <div class="start-meta">
-            <p><strong>{{ t.start.configLabel }}</strong> <code>~/.config/shum</code></p>
-            <p><strong>{{ t.start.stateLabel }}</strong> <code>~/.cache/shum</code></p>
+            <p>
+              <strong>{{ t.start.configLabel }}</strong>
+              <code>~/.config/shum</code>
+            </p>
+            <p>
+              <strong>{{ t.start.stateLabel }}</strong>
+              <code>~/.cache/shum</code>
+            </p>
           </div>
         </div>
 
