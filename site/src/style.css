@@ -208,6 +208,33 @@ pre code {
   transform: translate(-1px, -1px);
 }
 
+.masthead-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.7rem;
+  padding: 0.7rem 0.9rem;
+  border: 2px solid var(--line);
+  background: var(--accent);
+  color: var(--paper-strong);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 rgba(23, 18, 15, 0.92);
+}
+
+.lang-toggle:hover,
+.lang-toggle:focus-visible {
+  transform: translate(-1px, -1px);
+}
+
 .page {
   display: grid;
   gap: 3rem;
