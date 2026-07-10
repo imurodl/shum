@@ -20,8 +20,22 @@ function detectLocale() {
 
 const locale = ref(detectLocale())
 
+function setMeta(selector, content) {
+  const el = document.head.querySelector(selector)
+  if (el) el.setAttribute('content', content)
+}
+
 function applyLocale(l) {
   document.documentElement.lang = l
+
+  const head = messages[l].head
+  document.title = head.title
+  setMeta('meta[name="description"]', head.description)
+  setMeta('meta[property="og:title"]', head.ogTitle)
+  setMeta('meta[property="og:description"]', head.ogDescription)
+  setMeta('meta[name="twitter:title"]', head.twitterTitle)
+  setMeta('meta[name="twitter:description"]', head.twitterDescription)
+
   try {
     localStorage.setItem(STORAGE_KEY, l)
   } catch {
@@ -36,6 +50,17 @@ function toggleLocale() {
 
 const messages = {
   en: {
+    head: {
+      title: 'shum — Compose upgrade CLI for AI agents',
+      description:
+        'shum is a CLI for safe, recoverable Docker Compose upgrades on remote SSH hosts. Built to be driven by AI coding agents — every command speaks --json, errors carry stable codes, and the entire surface loads in one shot.',
+      ogTitle: 'shum — Compose upgrade CLI for AI agents',
+      ogDescription:
+        'Safe, recoverable Docker Compose upgrades on remote SSH hosts — driven by Claude Code, Codex, Gemini CLI, or your terminal. JSON contract, stable error codes, one-shot agent-help.',
+      twitterTitle: 'shum — Compose upgrade CLI for AI agents',
+      twitterDescription:
+        'Safe, recoverable Docker Compose upgrades on remote SSH hosts — driven by AI coding agents. JSON contract, stable error codes, one-shot agent-help.',
+    },
     brandCopy: 'agent-driveable Compose CLI',
     githubLink: 'View on GitHub',
     langToggle: '한국어',
@@ -161,6 +186,17 @@ const messages = {
     },
   },
   ko: {
+    head: {
+      title: 'shum — AI 에이전트를 위한 Compose 업그레이드 CLI',
+      description:
+        'shum은 원격 SSH 호스트에서 안전하고 복구 가능한 Docker Compose 업그레이드를 수행하는 CLI입니다. AI 코딩 에이전트가 다루도록 설계되어, 모든 명령이 --json으로 응답하고, 오류는 안정적인 코드를 담으며, 전체 인터페이스가 한 번에 로드됩니다.',
+      ogTitle: 'shum — AI 에이전트를 위한 Compose 업그레이드 CLI',
+      ogDescription:
+        'Claude Code, Codex, Gemini CLI, 또는 터미널로 다루는 원격 SSH 호스트의 안전하고 복구 가능한 Docker Compose 업그레이드. JSON 계약, 안정적인 오류 코드, 한 번의 agent-help 호출.',
+      twitterTitle: 'shum — AI 에이전트를 위한 Compose 업그레이드 CLI',
+      twitterDescription:
+        'AI 코딩 에이전트가 다루는 원격 SSH 호스트의 안전하고 복구 가능한 Docker Compose 업그레이드. JSON 계약, 안정적인 오류 코드, 한 번의 agent-help 호출.',
+    },
     brandCopy: '에이전트가 다루는 Compose CLI',
     githubLink: 'GitHub에서 보기',
     langToggle: 'English',
